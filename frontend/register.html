@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="campus-selection" class="form-card">
+    <h2>Get Started</h2>
+    <p>Select Facility campus to proceed</p>
+    <div class="campus-btn-group">
+      <button class="campus-btn" data-campus="STU">
+        <span class="campus-icon">🏛️</span><br>
+        <strong>STU</strong><br>
+        Sunyani Technical University
+      </button>
+      <button class="campus-btn" data-campus="UENR">
+        <span class="campus-icon">🏫</span><br>
+        <strong>UENR</strong><br>
+        University of Energy & Natural Resources
+      </button>
+      <button class="campus-btn" data-campus="Other">
+        <span class="campus-icon">🏠</span><br>
+        <strong>Other Campuses</strong><br>
+        Outstations
+      </button>
+    </div>
+  </div>
+
+  <div id="register-section" class="form-card hide">
+    <h2>Register</h2>
+    <form id="register-form">
+      <input type="email" placeholder="Email" required />
+      <input type="password" placeholder="Password" required />
+      <input type='text' placeholder='Full Name' required />
+      <label for="hostel-select" class="visually-hidden">Select Hostel</label>
+      <select id="hostel-select" required title="Select Hostel">
+        <option value=''>Select Hostel</option>
+        <option>Unity Hostel</option>
+        <option>Peace Lodge</option>
+      </select>
+      <input type="hidden" id="campus-input" name="campus" />
+      <button type="submit">Register</button>
+    </form>
+    <p class="login-link">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script>
+    // Campus selection logic
+    document.querySelectorAll('.campus-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var campus = btn.getAttribute('data-campus');
+        document.getElementById('campus-selection').style.display = 'none';
+        document.getElementById('register-section').style.display = 'block';
+        document.getElementById('register-section').classList.remove('hide');
+        document.getElementById('campus-input').value = campus;
+      });
+    });
+
+    // Ensure register-section is hidden on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('register-section').style.display = 'none';
+    });
+
+    // Registration form submission
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.querySelector('input[type="email"]').value;
+      const password = document.querySelector('input[type="password"]').value;
+      const fullName = document.querySelector('input[type="text"]').value;
+      const campus = document.getElementById('campus-input').value;
+      const hostel = document.getElementById('hostel-select').value;
+      
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, password, campus, hostel })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('campus', data.campus);
+          
+          if (data.campus === 'STU') {
+            window.location.href = 'dashboard/tenant.html';
+          } else {
+            alert('Registration successful!');
+            window.location.href = 'login.html';
+          }
+        } else {
+          alert(`Error: ${data.message}`);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('Registration failed. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

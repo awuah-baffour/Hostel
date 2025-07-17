@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-bg"></div>
+  <div class="form-card login-card">
+    <div class="login-logo">
+      <img src="images/about-hostelhub.jpg" alt="Hostel Hub Logo">
+    </div>
+    <h2>Welcome Back</h2>
+    <p class="login-sub">Sign in to your Hostel Hub account</p>
+    <form id="login-form" autocomplete="off">
+      <div class="input-group">
+        <input type="email" placeholder="Email" aria-label="Email" required />
+      </div>
+      <div class="input-group password-group">
+        <input type="password" placeholder="Password" aria-label="Password" id="passwordInput" required autocomplete="off" />
+        <button type="button" id="togglePassword" aria-label="Show or hide password">
+          <img src="images/eye.svg" alt="Show">
+        </button>
+      </div>
+      <div class="forgot-link">
+        <a href="#" tabindex="0">Forgot password?</a>
+      </div>
+      <div id="login-message" aria-live="polite"></div>
+      <button type="submit">Login</button>
+    </form>
+    <p class="login-link">Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Password toggle
+      const passwordInput = document.getElementById("passwordInput");
+      const togglePassword = document.getElementById("togglePassword");
+      
+      if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", () => {
+          if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            togglePassword.querySelector('img').src = "images/eye-off.svg";
+            togglePassword.querySelector('img').alt = "Hide password";
+          } else {
+            passwordInput.type = "password";
+            togglePassword.querySelector('img').src = "images/eye.svg";
+            togglePassword.querySelector('img').alt = "Show password";
+          }
+        });
+      }
+
+      // Login form submission
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.querySelector('input[type="email"]').value;
+        const password = document.getElementById('passwordInput').value;
+        
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('userId', data.userId);
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('campus', data.campus);
+            
+            if (data.role === 'admin') {
+              window.location.href = 'dashboard/admin.html';
+            } else {
+              window.location.href = 'dashboard/tenant.html';
+            }
+          } else {
+            document.getElementById('login-message').textContent = data.message;
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          document.getElementById('login-message').textContent = 'Login failed. Please try again.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
