@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search & Sort Test</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="main-content">
+      <section class="dashboard-section active" id="bookings-section">
+        <h2>📦 Test Bookings</h2>
+        <div class="filter-container">
+          <div class="filter-group">
+            <label for="booking-status-filter">Status</label>
+            <select id="booking-status-filter">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="booking-date-filter">Date</label>
+            <input type="date" id="booking-date-filter">
+          </div>
+          <div class="filter-group" style="flex: 1; min-width: 200px;">
+            <label for="booking-filter">Search</label>
+            <input type="text" id="booking-filter" placeholder="Search by tenant, hostel, room type, room number, or amount...">
+          </div>
+        </div>
+        <table id="pending-bookings-table">
+          <thead>
+            <tr>
+              <th data-sort="tenant">Tenant <span class="sort-icon"></span></th>
+              <th data-sort="hostel">Hostel <span class="sort-icon"></span></th>
+              <th data-sort="roomType">Room Type <span class="sort-icon"></span></th>
+              <th data-sort="roomNumber">Room # <span class="sort-icon"></span></th>
+              <th data-sort="amount">Amount <span class="sort-icon"></span></th>
+              <th data-sort="status">Status <span class="sort-icon"></span></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Test data will be loaded here -->
+          </tbody>
+        </table>
+        
+        <!-- Mobile Bookings Container -->
+        <div id="mobile-bookings-container" class="mobile-bookings-container" style="display: none;">
+          <!-- Mobile booking cards will be rendered here -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Test data
+    const testBookings = [
+      {
+        _id: '1',
+        user: { fullName: 'John Doe' },
+        hostel: { name: 'BLOCK A' },
+        roomType: '2 in a room',
+        roomNumber: 'A101',
+        amount: 800,
+        status: 'pending',
+        createdAt: '2024-01-15T10:00:00Z'
+      },
+      {
+        _id: '2',
+        user: { fullName: 'Jane Smith' },
+        hostel: { name: 'BLOCK A' },
+        roomType: '1 in a room',
+        roomNumber: 'A102',
+        amount: 1000,
+        status: 'confirmed',
+        createdAt: '2024-01-14T09:00:00Z'
+      },
+      {
+        _id: '3',
+        user: { fullName: 'Bob Johnson' },
+        hostel: { name: 'BLOCK B' },
+        roomType: '4 in a room',
+        roomNumber: 'B201',
+        amount: 500,
+        status: 'pending',
+        createdAt: '2024-01-16T11:00:00Z'
+      },
+      {
+        _id: '4',
+        user: { fullName: 'Alice Brown' },
+        hostel: { name: 'BLOCK A' },
+        roomType: '3 in a room',
+        roomNumber: 'A103',
+        amount: 650,
+        status: 'cancelled',
+        createdAt: '2024-01-13T08:00:00Z'
+      }
+    ];
+
+    // Load test data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Simulate loading bookings
+      setTimeout(() => {
+        window.renderBookingsTable(testBookings);
+        window.initializeSearchAndSort();
+      }, 100);
+    });
+  </script>
+  <script src="admin-stu.js"></script>
+</body>
+</html> 

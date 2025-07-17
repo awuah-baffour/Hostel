@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#3498db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="JL Hostels">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Tenant Dashboard</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <!-- Mobile Menu Button -->
+  <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  
+  <!-- Mobile Navigation Overlay -->
+  <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+    <div class="mobile-nav-content">
+      <div class="mobile-nav-header">
+        <h2>🏠 JL HOSTELS</h2>
+        <button id="close-mobile-menu" class="close-mobile-menu">&times;</button>
+      </div>
+      <nav class="mobile-nav">
+        <a href="#book-room" class="mobile-nav-link active">Book Room</a>
+        <a href="#payments" class="mobile-nav-link">Payments</a>
+        <a href="#profile" class="mobile-nav-link">Profile</a>
+        <a href="../login.html" class="mobile-nav-link">Logout</a>
+      </nav>
+    </div>
+  </div>
+  <div class="dashboard-container">
+    <aside class="sidebar" aria-label="Sidebar Navigation">
+      <h2>🏠 JL HOSTELS</h2>
+      <nav>
+        <a href="#book-room" target="_blank">Book Room</a>
+        <a href="#payments" target="_blank">Payments</a>
+        <a href="#profile" target="_blank">Profile</a>
+        <a href="../login.html" target="_blank">Logout</a>
+      </nav>
+    </aside>
+    <div class="main-content">
+      <section class="dashboard-section" id="bookings-section">
+        <h2>📌 My Bookings</h2>
+        <table>
+          <thead>
+            <tr><th>Hostel</th><th>Room Type</th><th>Room #</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="bookings-tbody">
+            <!-- Bookings will be loaded here -->
+          </tbody>
+        </table>
+      </section>
+      <section class="dashboard-section" id="book-room-section">
+        <h2>��️ Book a Room</h2>
+        
+        <!-- Booking Status Indicator -->
+        <div id="booking-status-indicator" style="display: none; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.2rem;">⚠️</span>
+            <div>
+              <strong>Active Booking Found</strong>
+              <p id="current-booking-info" style="margin: 0.5rem 0 0 0; color: #856404;"></p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="room-types-list">
+          <div class="room-card">
+            <img src="../images/1 room.webp" alt="1 in a room, BLOCK A" class="room-img" />
+            <div class="room-info">
+              <h3>1 in a room</h3>
+              <p class="room-price">GHS 1000</p>
+              <button class="action-btn book-room-btn" data-room="1 in a room" data-price="GHS 1000">Book Room</button>
+            </div>
+          </div>
+          <div class="room-card">
+            <img src="../images/2 room.webp" alt="2 in a room, BLOCK A" class="room-img" />
+            <div class="room-info">
+              <h3>2 in a room</h3>
+              <p class="room-price">GHS 800</p>
+              <button class="action-btn book-room-btn" data-room="2 in a room" data-price="GHS 800">Book Room</button>
+            </div>
+          </div>
+          <div class="room-card">
+            <img src="../images/3 room.webp" alt="3 in a room, BLOCK A" class="room-img" />
+            <div class="room-info">
+              <h3>3 in a room</h3>
+              <p class="room-price">GHS 650</p>
+              <button class="action-btn book-room-btn" data-room="3 in a room" data-price="GHS 650">Book Room</button>
+            </div>
+          </div>
+          <div class="room-card">
+            <img src="../images/4 room.webp" alt="4 in a room, BLOCK A" class="room-img" />
+            <div class="room-info">
+              <h3>4 in a room</h3>
+              <p class="room-price">GHS 500</p>
+              <button class="action-btn book-room-btn" data-room="4 in a room" data-price="GHS 500">Book Room</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="dashboard-section" id="payments-section">
+        <h2>💳 Payment History</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div class="payment-info-box" style="background:#eaf6fb;color:#222;padding:1rem 1.2rem;border-radius:8px;font-size:1.05rem;flex:1;margin-right:1rem;">
+            To complete your booking, please pay your hostel fees at the designated bank. After payment, present your bank receipt to the hostel admin for approval. Your booking status will be updated to <b>Confirmed</b> once the admin approves your payment.
+          </div>
+          <button id="refresh-payments-btn" class="action-btn" style="white-space:nowrap;padding:0.5rem 1rem;font-size:0.9rem;">
+            🔄 Refresh
+          </button>
+        </div>
+        <table id="payments-table" style="display:none;">
+          <thead>
+            <tr><th>Date</th><th>Hostel</th><th>Room</th><th>Amount</th><th>Status</th></tr>
+          </thead>
+          <tbody id="payments-tbody">
+            <!-- Payment rows will be added dynamically -->
+          </tbody>
+        </table>
+        <div id="no-payments-msg" style="text-align:center;color:#888;">No payments yet.</div>
+      </section>
+      <!-- Room Book Modal -->
+      <div id="room-book-modal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="room-book-modal-title">
+        <div class="modal-content">
+          <h3 id="room-book-modal-title">Confirm Room Booking</h3>
+          <p id="room-book-modal-details"></p>
+          <button id="confirm-room-book-btn" class="action-btn">Confirm</button>
+          <button id="close-room-book-modal" class="action-btn">Cancel</button>
+        </div>
+      </div>
+      <!-- Payment Instructions Modal -->
+      <div id="payment-instructions-modal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="payment-instructions-title">
+        <div class="modal-content">
+          <h3 id="payment-instructions-title">Payment Instructions</h3>
+          <p>To complete your booking, please pay your hostel fees at the designated bank. After payment, present your bank receipt to the hostel admin for approval. Your booking status will be updated to <b>Confirmed</b> once the admin approves your payment.</p>
+          <button id="close-payment-instructions-modal" class="action-btn">Close</button>
+        </div>
+      </div>
+      <section class="dashboard-section" id="profile-section">
+        <h2>👤 Profile</h2>
+        <div class="profile-info">
+        <p><strong>Name:</strong> <span id="profile-name-display"></span></p>
+        <p><strong>Email:</strong> <span id="profile-email-display"></span></p>
+          <div id="profile-update-status" class="update-status" style="display: none;">
+            <p><strong>Update Status:</strong> <span id="update-status-text"></span></p>
+            <p><strong>Submitted:</strong> <span id="update-submitted-date"></span></p>
+          </div>
+        </div>
+        <button id="edit-profile-btn" class="action-btn">Edit Profile</button>
+      </section>
+    </div>
+  </div>
+  <div id="edit-profile-modal" class="modal hide">
+    <form id="edit-profile-form">
+      <label for="profile-name">Full Name</label>
+      <input type="text" id="profile-name" name="profile-name" required />
+      <label for="profile-email">Email</label>
+      <input type="email" id="profile-email" name="profile-email" required />
+      <button type="submit" class="action-btn">Save</button>
+      <button type="button" id="close-profile-modal" class="action-btn">Cancel</button>
+    </form>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+    const sectionMap = {
+      'Book Room': 'book-room-section',
+      'Payments': 'payments-section',
+      'Profile': 'profile-section',
+      'Logout': null
+    };
+
+    let selectedRoom = '';
+    let selectedPrice = '';
+    let hostelId = null; // Store the hostel ID for booking
+
+    // Fetch hostel ID for the user's campus
+    async function fetchHostelId() {
+      const token = localStorage.getItem('token');
+      const campus = localStorage.getItem('campus');
+      
+      console.log('🏨 Fetching hostel ID for campus:', campus);
+      console.log('Token available:', !!token);
+      
+      if (!token || !campus) {
+        console.log('❌ Missing token or campus');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/hostels?campus=${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        console.log('📥 Hostel response status:', response.status);
+        
+        if (response.ok) {
+          const hostels = await response.json();
+          console.log('📥 Hostels received:', hostels);
+          
+          if (hostels.length > 0) {
+            hostelId = hostels[0]._id; // Get the first hostel (BLOCK A)
+            console.log('✅ Hostel ID fetched:', hostelId);
+          } else {
+            console.log('❌ No hostels found for campus:', campus);
+          }
+        } else {
+          console.log('❌ Failed to fetch hostels');
+        }
+      } catch (error) {
+        console.error('❌ Error fetching hostel ID:', error);
+      }
+    }
+
+    // Call fetchHostelId on page load
+    fetchHostelId();
+
+    // --- Booking Flow Functions ---
+    function showModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'block';
+      modal.classList.remove('hide');
+      modal.classList.add('show');
+      document.body.classList.add('modal-active');
+    }
+    function hideModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'none';
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      document.body.classList.remove('modal-active');
+    }
+    // Attach listeners to all Book Room buttons
+    function attachBookRoomListeners() {
+      const buttons = document.querySelectorAll('.book-room-btn');
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          // Check if button is disabled (user already has a booking)
+          if (btn.disabled) {
+            alert('You already have an active booking. Please wait for it to be confirmed or cancelled before booking another room.');
+            return;
+          }
+          
+          selectedRoom = btn.dataset.room;
+          selectedPrice = btn.dataset.price;
+          document.getElementById('room-book-modal-details').textContent =
+            `Room Type: ${selectedRoom}, Price: ${selectedPrice}`;
+          showModal('room-book-modal');
+        });
+      });
+    }
+    attachBookRoomListeners();
+    // On load, show only Book Room section
+    document.querySelectorAll('.dashboard-section').forEach(section => {
+      section.style.display = 'none';
+    });
+    document.getElementById('book-room-section').style.display = 'block';
+    // Sidebar navigation
+      document.querySelectorAll('.sidebar nav a').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          if (link.getAttribute('href') === '../login.html') return;
+          e.preventDefault();
+        // Hide all sections
+          document.querySelectorAll('.dashboard-section').forEach(section => {
+            section.style.display = 'none';
+          });
+        // Show the selected section
+          const sectionId = sectionMap[link.textContent.trim()];
+          if (sectionId && document.getElementById(sectionId)) {
+            document.getElementById(sectionId).style.display = 'block';
+          }
+        });
+      });
+    // Profile modal
+    document.querySelector('#profile-section #edit-profile-btn').addEventListener('click', () => {
+      const modal = document.getElementById('edit-profile-modal');
+      modal.style.display = 'block';
+      modal.classList.remove('hide');
+      modal.classList.add('show');
+      document.body.classList.add('modal-active');
+    });
+    document.getElementById('close-profile-modal').addEventListener('click', () => {
+      const modal = document.getElementById('edit-profile-modal');
+      modal.style.display = 'none';
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      document.body.classList.remove('modal-active');
+    });
+    document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      if (!token || !userId) {
+        alert('Please login again');
+        return;
+      }
+
+      const formData = {
+        name: document.getElementById('profile-name').value,
+        email: document.getElementById('profile-email').value
+      };
+
+      try {
+        const response = await fetch('/api/auth/profile-update-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          alert('Profile update request submitted successfully! Please wait for admin approval.');
+          const modal = document.getElementById('edit-profile-modal');
+          modal.style.display = 'none';
+          modal.classList.remove('show');
+          modal.classList.add('hide');
+          document.body.classList.remove('modal-active');
+          loadProfileUpdateStatus();
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to submit profile update request');
+        }
+      } catch (error) {
+        alert('Error submitting profile update request');
+        console.error(error);
+      }
+    });
+    // Utility to update payment table/message visibility
+    function updatePaymentsVisibility() {
+      const paymentsTable = document.getElementById('payments-table');
+      const paymentsTbody = document.getElementById('payments-tbody');
+      const noPaymentsMsg = document.getElementById('no-payments-msg');
+      // Check for any <tr> in tbody
+      if (paymentsTbody && paymentsTbody.querySelector('tr')) {
+        paymentsTable.style.display = '';
+        noPaymentsMsg.style.display = 'none';
+      } else {
+        paymentsTable.style.display = 'none';
+        noPaymentsMsg.style.display = '';
+      }
+    }
+    // On load, update payment visibility
+    updatePaymentsVisibility();
+    // Confirm booking: add to table, show payment modal, and add payment row
+    document.getElementById('confirm-room-book-btn').addEventListener('click', async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      console.log('🚀 Starting booking process...');
+      console.log('Token:', token ? 'Present' : 'Missing');
+      console.log('User ID:', userId);
+      console.log('Hostel ID:', hostelId);
+      console.log('Selected Room:', selectedRoom);
+      console.log('Selected Price:', selectedPrice);
+      
+      if (!token || !userId) {
+        alert('Please log in to book a room');
+        return;
+      }
+
+      if (!hostelId) {
+        alert('Hostel information not available. Please refresh the page and try again.');
+        return;
+      }
+
+      try {
+        // Extract price from selectedPrice (remove "GHS " prefix)
+        const amount = parseInt(selectedPrice.replace('GHS ', ''));
+        console.log('Calculated amount:', amount);
+        
+        // Create booking data
+        const bookingData = {
+          userId: userId,
+          hostelId: hostelId, // Use the fetched hostelId
+          roomType: selectedRoom,
+          amount: amount
+        };
+        
+        console.log('📤 Sending booking data:', bookingData);
+
+        // Send booking to backend
+          const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+          body: JSON.stringify(bookingData)
+        });
+
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response ok:', response.ok);
+
+        if (response.ok) {
+          const booking = await response.json();
+          console.log('✅ Booking created successfully:', booking);
+          
+          // Update UI with the new booking
+          const bookingsTable = document.querySelector('#bookings-section tbody');
+          const newRow = document.createElement('tr');
+          newRow.innerHTML = `
+            <td>${booking.hostel?.name || 'N/A'}</td>
+            <td>${selectedRoom}</td>
+            <td>${booking.roomNumber || '-'}</td>
+            <td>GHS ${amount}</td>
+            <td><span class="badge pending">Pending</span></td>
+            <td><button class="action-btn">View</button></td>
+          `;
+          bookingsTable.appendChild(newRow);
+          
+          // Add payment row
+          const paymentsTbody = document.getElementById('payments-tbody');
+          const today = new Date().toISOString().slice(0,10);
+          const paymentRow = document.createElement('tr');
+          paymentRow.innerHTML = `
+            <td>${today}</td>
+            <td>${booking.hostel?.name || 'N/A'}</td>
+            <td>${booking.roomNumber || '-'}</td>
+            <td>GHS ${amount}</td>
+            <td><span class="badge pending">Pending</span></td>
+          `;
+          paymentsTbody.appendChild(paymentRow);
+          updatePaymentsVisibility();
+          hideModal('room-book-modal');
+          showModal('payment-instructions-modal');
+          
+          // Reload bookings to show the new booking from database and update UI
+          await loadBookings();
+        } else {
+          const errorData = await response.json();
+          console.error('❌ Booking failed:', errorData);
+          alert('Booking failed: ' + (errorData.message || 'Unknown error'));
+        }
+        } catch (error) {
+        console.error('❌ Error creating booking:', error);
+          alert('Booking failed. Please try again.');
+        }
+      });
+    // On load, hide payments table if no rows
+    const paymentsTable = document.getElementById('payments-table');
+    const paymentsTbody = document.getElementById('payments-tbody');
+    const noPaymentsMsg = document.getElementById('no-payments-msg');
+    if (!paymentsTbody.hasChildNodes()) {
+      paymentsTable.style.display = 'none';
+      noPaymentsMsg.style.display = '';
+    } else {
+      paymentsTable.style.display = '';
+      noPaymentsMsg.style.display = 'none';
+    }
+    // Close confirm modal
+      document.getElementById('close-room-book-modal').addEventListener('click', () => {
+      hideModal('room-book-modal');
+    });
+    // Close payment instructions modal
+    document.getElementById('close-payment-instructions-modal').addEventListener('click', () => {
+      hideModal('payment-instructions-modal');
+    });
+    // Fetch and render bookings from backend
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+        async function loadBookings() {
+      if (!token || !userId) return;
+      const res = await fetch(`/api/bookings/user/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const bookings = await res.json();
+      console.log('📥 Bookings received in tenant page:', bookings);
+      
+      // Check for existing booking and update UI
+      // Only prevent new bookings if there's a pending booking (not confirmed)
+      const pendingBooking = bookings.find(booking => booking.status === 'pending');
+      const confirmedBooking = bookings.find(booking => booking.status === 'confirmed');
+      const bookingStatusIndicator = document.getElementById('booking-status-indicator');
+      const currentBookingInfo = document.getElementById('current-booking-info');
+      const bookRoomButtons = document.querySelectorAll('.book-room-btn');
+      
+      if (pendingBooking) {
+        // Show booking status indicator for pending booking
+        bookingStatusIndicator.style.display = 'block';
+        const bookingDate = new Date(pendingBooking.createdAt).toLocaleDateString();
+        currentBookingInfo.textContent = `You have a pending booking for ${pendingBooking.roomType} (${pendingBooking.hostel?.name || 'N/A'}) created on ${bookingDate}. Please wait for admin approval. You can only book one room at a time.`;
+        
+        // Disable booking buttons
+        bookRoomButtons.forEach(btn => {
+          btn.disabled = true;
+          btn.textContent = 'Booking Pending';
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+        });
+      } else if (confirmedBooking) {
+        // Show booking status indicator for confirmed booking
+        bookingStatusIndicator.style.display = 'block';
+        const bookingDate = new Date(confirmedBooking.createdAt).toLocaleDateString();
+        const roomInfo = confirmedBooking.roomNumber ? `Room ${confirmedBooking.roomNumber}` : 'Room assignment pending';
+        currentBookingInfo.textContent = `You have a confirmed booking for ${confirmedBooking.roomType} (${confirmedBooking.hostel?.name || 'N/A'}) - ${roomInfo} created on ${bookingDate}. Your booking is confirmed and you can see payment details in the Payments section.`;
+        
+        // Enable booking buttons (user can book again since current booking is confirmed)
+        bookRoomButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = 'Book Another Room';
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        });
+      } else {
+        // No bookings - enable booking buttons
+        bookingStatusIndicator.style.display = 'none';
+        
+        // Enable booking buttons
+        bookRoomButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = 'Book Room';
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        });
+      }
+      
+      const bookingsTbody = document.getElementById('bookings-tbody');
+      bookingsTbody.innerHTML = '';
+      const paymentsTbody = document.getElementById('payments-tbody');
+      paymentsTbody.innerHTML = '';
+      let hasPayments = false;
+      bookings.forEach(booking => {
+        // Bookings table
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${booking.hostel?.name || 'N/A'}</td>
+          <td>${booking.roomType}</td>
+          <td>${booking.roomNumber || '-'}</td>
+          <td>GHS ${booking.amount}</td>
+          <td><span class="badge ${booking.status}">${booking.status}</span></td>
+          <td><button class="action-btn">View</button></td>
+        `;
+        bookingsTbody.appendChild(row);
+        // Payments table (only confirmed bookings)
+        if (booking.status === 'confirmed') {
+          console.log('💰 Creating payment row for confirmed booking:', booking);
+          console.log('🏠 Room number:', booking.roomNumber);
+          const payRow = document.createElement('tr');
+          payRow.innerHTML = `
+            <td>${new Date(booking.createdAt).toISOString().slice(0,10)}</td>
+            <td>${booking.hostel?.name || 'N/A'}</td>
+            <td>${booking.roomNumber || '-'}</td>
+            <td>GHS ${booking.amount}</td>
+            <td><span class="badge confirmed">Paid</span></td>
+          `;
+          paymentsTbody.appendChild(payRow);
+          hasPayments = true;
+        } else {
+          console.log('❌ Booking not confirmed, status:', booking.status, 'Booking:', booking);
+        }
+      });
+      updatePaymentsVisibility();
+    }
+    await loadBookings();
+    
+    // Load user profile data
+    async function loadUserProfile() {
+      if (!token || !userId) return;
+      
+      try {
+        const response = await fetch(`/api/auth/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('profile-name-display').textContent = userData.name || 'N/A';
+          document.getElementById('profile-email-display').textContent = userData.email || 'N/A';
+          
+          // Pre-fill the edit form
+          document.getElementById('profile-name').value = userData.name || '';
+          document.getElementById('profile-email').value = userData.email || '';
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    }
+    
+    // Load profile update request status
+    async function loadProfileUpdateStatus() {
+      if (!token || !userId) return;
+      
+      try {
+        const response = await fetch(`/api/auth/profile-update-request/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const statusData = await response.json();
+          const statusDiv = document.getElementById('profile-update-status');
+          const statusText = document.getElementById('update-status-text');
+          const submittedDate = document.getElementById('update-submitted-date');
+          
+          if (statusData.request) {
+            statusText.textContent = statusData.request.status;
+            statusText.className = `status-${statusData.request.status}`;
+            submittedDate.textContent = new Date(statusData.request.createdAt).toLocaleDateString();
+            statusDiv.style.display = 'block';
+          } else {
+            statusDiv.style.display = 'none';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile update status:', error);
+      }
+    }
+    
+    // Add refresh button event listener
+    document.getElementById('refresh-payments-btn').addEventListener('click', async () => {
+      console.log('🔄 Refreshing payments and bookings...');
+      await loadBookings();
+      showToast('Data refreshed successfully!', 'success');
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-weight: 600;
+        max-width: 300px;
+        word-wrap: break-word;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+    
+    // Load initial data
+    await loadUserProfile();
+    await loadProfileUpdateStatus();
+    
+    // Auto-refresh every 30 seconds to check for booking status updates
+    setInterval(async () => {
+      console.log('🔄 Auto-refreshing bookings...');
+      await loadBookings();
+    }, 30000); // 30 seconds
+    
+    // Show welcome message with refresh info
+    showToast('Welcome! Use the refresh button to check for booking updates.', 'info');
+    
+    // Mobile Navigation Functionality
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+    const closeMobileMenu = document.getElementById('close-mobile-menu');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+    // Toggle mobile menu
+    mobileMenuBtn.addEventListener('click', function() {
+      mobileNavOverlay.classList.add('active');
+      mobileMenuBtn.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+
+    // Close mobile menu
+    function closeMobileNav() {
+      mobileNavOverlay.classList.remove('active');
+      mobileMenuBtn.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    closeMobileMenu.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', function(e) {
+      if (e.target === mobileNavOverlay) {
+        closeMobileNav();
+      }
+    });
+
+    // Mobile navigation links
+    mobileNavLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        if (link.getAttribute('href') === '../login.html') return;
+        e.preventDefault();
+
+        // Update active states
+        mobileNavLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        // Navigate to section
+        const sectionId = sectionMap[link.textContent.trim()];
+        document.querySelectorAll('.dashboard-section').forEach(section => {
+          section.style.display = 'none';
+        });
+        
+        if (sectionId && document.getElementById(sectionId)) {
+          document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // Close mobile menu
+        closeMobileNav();
+      });
+      });
+    });
+  </script>
+
+</body>
+</html>

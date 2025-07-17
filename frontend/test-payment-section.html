@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Section</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        .success {
+            border-left-color: #27ae60;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background: #f8d7da;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Payment Section</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Simulate Confirmed Booking</h2>
+        <p>This test simulates a confirmed booking with room assignment to verify the payment section logic.</p>
+        <button class="test-button" onclick="testConfirmedBooking()">Test Confirmed Booking</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Simulate Pending Booking</h2>
+        <p>This test simulates a pending booking to verify it doesn't appear in payments.</p>
+        <button class="test-button" onclick="testPendingBooking()">Test Pending Booking</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Payment Section Display</h2>
+        <p>This test shows how the payment section should look with confirmed bookings.</p>
+        <button class="test-button" onclick="testPaymentSection()">Test Payment Section</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Refresh Functionality</h2>
+        <p>This test simulates the refresh button functionality.</p>
+        <button class="test-button" onclick="testRefresh()">Test Refresh</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <script>
+        // Simulate booking data
+        const mockBookings = [
+            {
+                _id: '1',
+                hostel: { name: 'JL Hostels - STU' },
+                roomType: '2 in a room',
+                roomNumber: 'A101',
+                amount: 400,
+                status: 'confirmed',
+                createdAt: '2024-01-15T10:30:00Z'
+            },
+            {
+                _id: '2',
+                hostel: { name: 'JL Hostels - STU' },
+                roomType: '4 in a room',
+                roomNumber: null,
+                amount: 500,
+                status: 'pending',
+                createdAt: '2024-01-16T14:20:00Z'
+            }
+        ];
+
+        function testConfirmedBooking() {
+            const result = document.getElementById('test1-result');
+            const confirmedBooking = mockBookings.find(b => b.status === 'confirmed');
+            
+            if (confirmedBooking) {
+                result.innerHTML = `
+                    <div class="result success">
+                        <h4>✅ Confirmed Booking Found</h4>
+                        <p><strong>Hostel:</strong> ${confirmedBooking.hostel.name}</p>
+                        <p><strong>Room Type:</strong> ${confirmedBooking.roomType}</p>
+                        <p><strong>Room Number:</strong> ${confirmedBooking.roomNumber || 'Not assigned'}</p>
+                        <p><strong>Amount:</strong> GHS ${confirmedBooking.amount}</p>
+                        <p><strong>Status:</strong> <span class="badge confirmed">${confirmedBooking.status}</span></p>
+                        <p><strong>Created:</strong> ${new Date(confirmedBooking.createdAt).toLocaleDateString()}</p>
+                        <p>This booking should appear in the payment section.</p>
+                    </div>
+                `;
+            } else {
+                result.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ No Confirmed Booking Found</h4>
+                        <p>No confirmed bookings in the test data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testPendingBooking() {
+            const result = document.getElementById('test2-result');
+            const pendingBooking = mockBookings.find(b => b.status === 'pending');
+            
+            if (pendingBooking) {
+                result.innerHTML = `
+                    <div class="result">
+                        <h4>⏳ Pending Booking Found</h4>
+                        <p><strong>Hostel:</strong> ${pendingBooking.hostel.name}</p>
+                        <p><strong>Room Type:</strong> ${pendingBooking.roomType}</p>
+                        <p><strong>Room Number:</strong> ${pendingBooking.roomNumber || 'Not assigned'}</p>
+                        <p><strong>Amount:</strong> GHS ${pendingBooking.amount}</p>
+                        <p><strong>Status:</strong> <span class="badge pending">${pendingBooking.status}</span></p>
+                        <p><strong>Created:</strong> ${new Date(pendingBooking.createdAt).toLocaleDateString()}</p>
+                        <p>This booking should NOT appear in the payment section (only confirmed bookings do).</p>
+                    </div>
+                `;
+            } else {
+                result.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ No Pending Booking Found</h4>
+                        <p>No pending bookings in the test data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testPaymentSection() {
+            const result = document.getElementById('test3-result');
+            const confirmedBookings = mockBookings.filter(b => b.status === 'confirmed');
+            
+            if (confirmedBookings.length > 0) {
+                let tableHTML = `
+                    <div class="result success">
+                        <h4>💳 Payment Section (Confirmed Bookings Only)</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Hostel</th>
+                                    <th>Room</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                confirmedBookings.forEach(booking => {
+                    tableHTML += `
+                        <tr>
+                            <td>${new Date(booking.createdAt).toISOString().slice(0,10)}</td>
+                            <td>${booking.hostel.name}</td>
+                            <td>${booking.roomNumber || '-'}</td>
+                            <td>GHS ${booking.amount}</td>
+                            <td><span class="badge confirmed">Paid</span></td>
+                        </tr>
+                    `;
+                });
+                
+                tableHTML += `
+                            </tbody>
+                        </table>
+                        <p><strong>Total Payments:</strong> ${confirmedBookings.length}</p>
+                        <p>This is how the payment section should look when there are confirmed bookings.</p>
+                    </div>
+                `;
+                
+                result.innerHTML = tableHTML;
+            } else {
+                result.innerHTML = `
+                    <div class="result">
+                        <h4>📭 No Payments to Display</h4>
+                        <p>No confirmed bookings found. The payment section should show "No payments yet."</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testRefresh() {
+            const result = document.getElementById('test4-result');
+            
+            result.innerHTML = `
+                <div class="result">
+                    <h4>🔄 Refresh Functionality Test</h4>
+                    <p><strong>Manual Refresh:</strong> Click the "🔄 Refresh" button in the tenant dashboard to reload booking data.</p>
+                    <p><strong>Auto Refresh:</strong> The dashboard automatically refreshes every 30 seconds.</p>
+                    <p><strong>When to Refresh:</strong></p>
+                    <ul>
+                        <li>After an admin confirms your booking and assigns a room</li>
+                        <li>If you don't see your confirmed booking in the payment section</li>
+                        <li>To check for any status updates</li>
+                    </ul>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Confirmed bookings should appear in the payment section</li>
+                        <li>Room numbers should be displayed</li>
+                        <li>Status should show as "Paid" for confirmed bookings</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testConfirmedBooking();
+                testPendingBooking();
+                testPaymentSection();
+                testRefresh();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

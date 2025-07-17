@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Tour - JL HOSTELS</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-bg"></div>
+  <div class="form-card login-card" style="max-width: 430px; margin: 4rem auto;">
+    <div class="login-logo" style="justify-content: center;">
+      <h1 style="margin: 0; font-size: 2.2rem; color: #27ae60; font-weight: 800; letter-spacing: 1.5px;">Book a Tour</h1>
+    </div>
+    <p class="login-sub">Schedule a visit to see our hostels in person!</p>
+    <form id="tour-form" autocomplete="off">
+      <div class="input-group">
+        <input type="text" id="tour-name" name="name" placeholder="Full Name" aria-label="Full Name" required />
+      </div>
+      <div class="input-group">
+        <input type="email" id="tour-email" name="email" placeholder="Email Address" aria-label="Email" required />
+      </div>
+      <div class="input-group">
+        <input type="tel" id="tour-phone" name="phone" placeholder="Phone Number" aria-label="Phone Number" required pattern="[0-9\-\+\s]{7,15}" />
+      </div>
+      <div class="input-group">
+        <select id="tour-campus" name="campus" required aria-label="Select Campus">
+          <option value="">Select Campus</option>
+          <option value="STU">STU - Sunyani Technical University</option>
+          <option value="UENR">UENR - University of Energy & Natural Resources</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <input type="date" id="tour-date" name="date" placeholder="Preferred Date" aria-label="Preferred Date" required />
+      </div>
+      <div class="input-group">
+        <input type="time" id="tour-time" name="time" placeholder="Preferred Time" aria-label="Preferred Time" required />
+      </div>
+      <div class="input-group">
+        <textarea id="tour-message" name="message" placeholder="Message (optional)" aria-label="Message" rows="3" style="resize:vertical;"></textarea>
+      </div>
+      <div id="tour-message-success" style="display:none;color:#27ae60;text-align:center;margin-bottom:1rem;">Thank you for booking a tour! We will contact you soon.</div>
+      <button type="submit" class="action-btn" style="width:100%;margin-top:0.5rem;">Submit Request</button>
+    </form>
+    <p class="login-link" style="margin-top:1.5rem;">Back to <a href="index.html">Home</a></p>
+  </div>
+  <script>
+    document.getElementById('tour-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('tour-name').value;
+      const email = document.getElementById('tour-email').value;
+      const phone = document.getElementById('tour-phone').value;
+      const campus = document.getElementById('tour-campus').value;
+      const preferredDate = document.getElementById('tour-date').value;
+      const preferredTime = document.getElementById('tour-time').value;
+      const message = document.getElementById('tour-message').value;
+      try {
+        const response = await fetch('/api/tours', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, campus, preferredDate, preferredTime, message })
+        });
+        if (response.ok) {
+          document.getElementById('tour-message-success').style.display = 'block';
+          document.getElementById('tour-form').reset();
+          setTimeout(function(){
+            document.getElementById('tour-message-success').style.display = 'none';
+          }, 5000);
+        } else {
+          alert('Failed to submit tour request. Please try again.');
+        }
+      } catch (err) {
+        alert('Failed to submit tour request. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html> 

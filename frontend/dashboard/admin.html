@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#3498db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="JL Hostels Admin">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="admin-dashboard">
+  <div id="global-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:2000;align-items:center;justify-content:center;">
+    <div style="border:6px solid #eee;border-top:6px solid #3498db;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+  </div>
+  <div id="toast-container" style="position:fixed;top:2rem;right:2rem;z-index:3000;display:flex;flex-direction:column;gap:0.7rem;"></div>
+  
+  <!-- Mobile Menu Button -->
+  <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  
+      <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+      <div class="mobile-nav-content">
+        <div class="mobile-nav-header">
+          <h2>🏠 JL HOSTELS</h2>
+          <button id="close-mobile-menu" class="close-mobile-menu">&times;</button>
+        </div>
+        <nav class="mobile-nav">
+          <a href="#dashboard" class="mobile-nav-link active">Dashboard</a>
+          <a href="#tenants" class="mobile-nav-link">Tenants</a>
+          <a href="#bookings" class="mobile-nav-link">Bookings</a>
+          <a href="#profile-requests" class="mobile-nav-link" id="mobile-profile-requests-link">Profile Requests</a>
+          <a href="#hostels" class="mobile-nav-link">Hostels</a>
+          <a href="../login.html" class="mobile-nav-link" id="mobile-logout-btn">Logout</a>
+        </nav>
+      </div>
+    </div>
+  <div class="dashboard-container">
+    <aside class="sidebar" aria-label="Sidebar Navigation">
+        <h2>🏠 JL HOSTELS</h2>
+        <nav>
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#tenants">Tenants</a>
+        <a href="#bookings">Bookings</a>
+          <a href="#profile-requests" id="profile-requests-link">Profile Requests</a>
+          <a href="#hostels">Hostels</a>
+        <a href="../login.html" id="logout-btn">Logout</a>
+      </nav>
+    </aside>
+    <div class="main-content">
+      <section class="dashboard-section active" id="dashboard-section">
+        <h2>📊 Overview</h2>
+        <div class="quick-actions" style="display:flex;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div class="quick-card" id="pending-profile-card" style="background:#fff3e0;border-radius:10px;padding:1.2rem 2rem;box-shadow:0 2px 8px #e67e2244;min-width:200px;display:flex;align-items:center;gap:1rem;cursor:pointer;">
+            <span style="font-size:2rem;">📝</span>
+            <div>
+              <div style="font-size:1.2rem;font-weight:600;color:#e67e22;" id="pending-profile-count-card">0</div>
+              <div style="font-size:1rem;color:#b36b00;">Pending Profile Requests</div>
+            </div>
+          </div>
+          <div class="quick-card" id="pending-bookings-card" style="background:#e3fcec;border-radius:10px;padding:1.2rem 2rem;box-shadow:0 2px 8px #27ae6044;min-width:200px;display:flex;align-items:center;gap:1rem;cursor:pointer;">
+            <span style="font-size:2rem;">📦</span>
+            <div>
+              <div style="font-size:1.2rem;font-weight:600;color:#27ae60;" id="pending-bookings-count-card">0</div>
+              <div style="font-size:1rem;color:#1e824c;">Pending Bookings</div>
+            </div>
+          </div>
+        </div>
+        <div class="recent-activity" style="margin-bottom:2rem;">
+          <h3 style="font-size:1.1rem;color:#30415d;margin-bottom:0.7rem;">Recent Activity</h3>
+          <ul id="recent-activity-list" style="list-style:none;padding:0;margin:0;"></ul>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3 id="total-tenants">0</h3>
+            <p>Total Tenants</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="pending-bookings">0</h3>
+            <p>Pending Bookings</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="total-revenue">GHS 0</h3>
+            <p>Total Revenue</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="occupancy-rate">0%</h3>
+            <p>Occupancy Rate</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="dashboardChart" height="80"></canvas>
+        </div>
+      </section>
+      <section class="dashboard-section" id="tenants-section">
+        <h2>👤 Tenants</h2>
+        <input type="text" id="tenant-search" placeholder="Search tenants by name, email, or hostel..." style="margin-bottom:1rem;width:100%;max-width:400px;padding:0.5rem;">
+        <ul class="tenant-list" id="tenant-list">
+          <!-- Tenants will be loaded here -->
+        </ul>
+        <div id="tenant-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-tenant-modal">&times;</span>
+            <h3 id="modal-tenant-name"></h3>
+            <p><strong>Email:</strong> <span id="modal-tenant-email"></span></p>
+            <p><strong>Hostel:</strong> <span id="modal-tenant-hostel"></span></p>
+            <p><strong>Campus:</strong> <span id="modal-tenant-campus"></span></p>
+            <p><strong>Role:</strong> <span id="modal-tenant-role"></span></p>
+          </div>
+        </div>
+      </section>
+      <section class="dashboard-section" id="bookings-section">
+        <h2>Pending Bookings</h2>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+          <select id="booking-status-filter" style="padding:0.5rem;">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <input type="date" id="booking-date-filter" style="padding:0.5rem;">
+          <input type="text" id="booking-filter" placeholder="Search bookings..." style="padding:0.5rem;flex:1;min-width:180px;">
+        </div>
+        <table id="pending-bookings-table">
+          <thead>
+            <tr><th>Tenant</th><th>Hostel</th><th>Room Type</th><th>Campus</th><th>Room #</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <!-- Pending bookings will be listed here -->
+          </tbody>
+        </table>
+        <div id="booking-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-booking-modal">&times;</span>
+            <h3>Booking Details</h3>
+            <p><strong>Tenant:</strong> <span id="modal-booking-tenant"></span></p>
+            <p><strong>Hostel:</strong> <span id="modal-booking-hostel"></span></p>
+            <p><strong>Room Type:</strong> <span id="modal-booking-room"></span></p>
+            <p><strong>Amount:</strong> <span id="modal-booking-amount"></span></p>
+            <p><strong>Status:</strong> <span id="modal-booking-status"></span></p>
+            <p><strong>Date:</strong> <span id="modal-booking-date"></span></p>
+            <p><strong>Booking ID:</strong> <span id="modal-booking-id"></span></p>
+          </div>
+        </div>
+      </section>
+      <section class="dashboard-section" id="profile-requests-section">
+        <h2>📝 Profile Update Requests <span id="pending-profile-count" style="font-size:1rem;color:#e67e22;margin-left:1rem;"></span></h2>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+          <select id="profile-status-filter" style="padding:0.5rem;">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <input type="text" id="profile-filter" placeholder="Search by tenant name..." style="padding:0.5rem;flex:1;min-width:180px;">
+        </div>
+        <table id="profile-requests-table">
+          <thead>
+            <tr><th>Tenant</th><th>Current Name</th><th>New Name</th><th>Current Email</th><th>New Email</th><th>Status</th><th>Submitted</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <!-- Profile requests will be listed here -->
+          </tbody>
+        </table>
+        <div id="profile-request-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-profile-request-modal">&times;</span>
+            <h3>Profile Update Request Details</h3>
+            <p><strong>Tenant:</strong> <span id="modal-profile-tenant"></span></p>
+            <p><strong>Current Name:</strong> <span id="modal-profile-current-name"></span></p>
+            <p><strong>New Name:</strong> <span id="modal-profile-new-name"></span></p>
+            <p><strong>Current Email:</strong> <span id="modal-profile-current-email"></span></p>
+            <p><strong>New Email:</strong> <span id="modal-profile-new-email"></span></p>
+            <p><strong>Status:</strong> <span id="modal-profile-status"></span></p>
+            <p><strong>Submitted:</strong> <span id="modal-profile-submitted"></span></p>
+            <div id="profile-request-actions" style="margin-top:1rem;">
+              <button id="approve-profile-request" class="action-btn" style="background:#27ae60;margin-right:0.5rem;">Approve</button>
+              <button id="reject-profile-request" class="action-btn" style="background:#e74c3c;">Reject</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="dashboard-section" id="hostels-section" style="display:none;">
+        <h2>🏨 Hostel Management</h2>
+        <button id="add-hostel-btn" class="action-btn" style="margin-bottom:1rem;">Add Hostel</button>
+        <table id="hostel-table">
+          <thead>
+            <tr><th>Name</th><th>Campus</th><th>Room Types</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <!-- Hostels will be loaded here -->
+          </tbody>
+        </table>
+        <div id="hostel-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-hostel-modal">&times;</span>
+            <h3 id="hostel-modal-title">Add/Edit Hostel</h3>
+            <form id="hostel-form">
+              <input type="hidden" id="hostel-id">
+              <div style="margin-bottom:1rem;">
+                <label>Name: <input type="text" id="hostel-name" required></label>
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label>Campus: <input type="text" id="hostel-campus" required></label>
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label>Room Types (comma separated): <input type="text" id="hostel-room-types" placeholder="e.g. Single, Double, Suite"></label>
+              </div>
+              <button type="submit" class="action-btn">Save</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Admin authentication check
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        window.location.href = 'admin-login.html';
+        return;
+      }
+
+      // Get admin token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'admin-login.html';
+        return;
+      }
+
+      // Load dashboard data
+      try {
+        // Load stats
+        const [tenantsRes, bookingsRes] = await Promise.all([
+          fetch('/api/auth/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('/api/bookings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (!tenantsRes.ok || !bookingsRes.ok) {
+          throw new Error('Failed to load data');
+        }
+
+        const tenants = await tenantsRes.json();
+        const bookings = await bookingsRes.json();
+
+        // Update stats
+        document.getElementById('total-tenants').textContent = tenants.length;
+        const pendingBookings = bookings.filter(b => b.status === 'pending');
+        document.getElementById('pending-bookings').textContent = pendingBookings.length;
+        const totalRevenue = bookings
+          .filter(b => b.status === 'confirmed')
+          .reduce((sum, booking) => sum + booking.amount, 0);
+        document.getElementById('total-revenue').textContent = `GHS ${totalRevenue}`;
+        // Occupancy Rate (mock calculation: total confirmed bookings / (tenants * 1 room))
+        const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+        const occupancyRate = tenants.length > 0 ? Math.round((confirmedBookings.length / tenants.length) * 100) : 0;
+        document.getElementById('occupancy-rate').textContent = `${occupancyRate}%`;
+
+        // Chart.js: Bookings and Revenue Over Time (mock data for now)
+        const ctx = document.getElementById('dashboardChart').getContext('2d');
+        // Group bookings by month
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const bookingsByMonth = Array(12).fill(0);
+        const revenueByMonth = Array(12).fill(0);
+        bookings.forEach(b => {
+          const date = new Date(b.createdAt || Date.now());
+          const month = date.getMonth();
+          bookingsByMonth[month]++;
+          if (b.status === 'confirmed') revenueByMonth[month] += b.amount;
+        });
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: months,
+            datasets: [
+              {
+                label: 'Bookings',
+                data: bookingsByMonth,
+                borderColor: '#2d3e50',
+                backgroundColor: 'rgba(44,62,80,0.08)',
+                yAxisID: 'y',
+                tension: 0.3
+              },
+              {
+                label: 'Revenue',
+                data: revenueByMonth,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39,174,96,0.08)',
+                yAxisID: 'y1',
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            stacked: false,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: 'Bookings & Revenue Over Time' }
+            },
+            scales: {
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: { display: true, text: 'Bookings' }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                title: { display: true, text: 'Revenue (GHS)' }
+              }
+            }
+          }
+        });
+
+        // Render tenants
+        const tenantList = document.getElementById('tenant-list');
+        let allTenants = tenants;
+        function renderTenants(filter = '') {
+          const regex = new RegExp(filter, 'i');
+          tenantList.innerHTML = allTenants
+            .filter(tenant =>
+              regex.test(tenant.fullName) || regex.test(tenant.email) || regex.test(tenant.hostel || '')
+            )
+            .map((tenant, idx) => {
+              let name = tenant.fullName.replace(regex, match => `<mark>${match}</mark>`);
+              let hostel = (tenant.hostel || '').replace(regex, match => `<mark>${match}</mark>`);
+              let email = tenant.email.replace(regex, match => `<mark>${match}</mark>`);
+              return `<li class="tenant-item" data-idx="${idx}">${name} – ${hostel || 'No hostel'} – ${email}</li>`;
+            })
+          .join('');
+          // Add click listeners for modal
+          document.querySelectorAll('.tenant-item').forEach(item => {
+            item.addEventListener('click', function() {
+              const idx = this.getAttribute('data-idx');
+              const tenant = allTenants.filter(tenant =>
+                regex.test(tenant.fullName) || regex.test(tenant.email) || regex.test(tenant.hostel || '')
+              )[idx];
+              if (tenant) {
+                document.getElementById('modal-tenant-name').textContent = tenant.fullName;
+                document.getElementById('modal-tenant-email').textContent = tenant.email;
+                document.getElementById('modal-tenant-hostel').textContent = tenant.hostel || 'No hostel';
+                document.getElementById('modal-tenant-campus').textContent = tenant.campus || 'N/A';
+                document.getElementById('modal-tenant-role').textContent = tenant.role || 'tenant';
+                document.getElementById('tenant-modal').style.display = 'block';
+              }
+            });
+          });
+        }
+        renderTenants();
+        document.getElementById('tenant-search').addEventListener('input', e => {
+          renderTenants(e.target.value.trim());
+        });
+
+        // Render bookings
+        const bookingsTable = document.querySelector('#pending-bookings-table tbody');
+        let allBookings = bookings;
+        function renderBookings() {
+          const status = document.getElementById('booking-status-filter').value;
+          const date = document.getElementById('booking-date-filter').value;
+          const search = document.getElementById('booking-filter').value.trim().toLowerCase();
+          const filtered = allBookings
+            .filter(b => {
+              let match = true;
+              if (status && b.status !== status) match = false;
+              if (date && b.createdAt) {
+                const bookingDate = new Date(b.createdAt).toISOString().slice(0,10);
+                if (bookingDate !== date) match = false;
+              }
+              if (search) {
+                const tenant = b.user?.fullName?.toLowerCase() || '';
+                const hostel = b.hostel?.name?.toLowerCase() || '';
+                const room = (b.roomType || '').toLowerCase();
+                if (!tenant.includes(search) && !hostel.includes(search) && !room.includes(search)) match = false;
+              }
+              return match;
+            });
+          bookingsTable.innerHTML = filtered
+            .map((b, idx) => `
+              <tr class="booking-row" data-idx="${idx}">
+                <td>${b.user?.fullName || 'N/A'}</td>
+                <td>${b.hostel?.name || 'N/A'}</td>
+                <td>${b.roomType}</td>
+                <td>${b.campus || 'N/A'}</td>
+                <td>${b.roomNumber || '-'}</td>
+                <td>GHS ${b.amount}</td>
+                <td><span class="badge ${b.status}">${b.status}</span></td>
+              <td>
+                  <button class="action-btn confirm-booking" data-id="${b._id}">Confirm</button>
+                  <button class="action-btn cancel-booking" data-id="${b._id}">Cancel</button>
+              </td>
+            </tr>
+          `)
+          .join('');
+          // Add click listeners for modal
+          document.querySelectorAll('.booking-row').forEach(row => {
+            row.addEventListener('click', function(e) {
+              // Prevent modal on action button click
+              if (e.target.classList.contains('action-btn')) return;
+              const idx = this.getAttribute('data-idx');
+              const b = filtered[idx];
+              if (b) {
+                document.getElementById('modal-booking-tenant').textContent = b.user?.fullName || 'N/A';
+                document.getElementById('modal-booking-hostel').textContent = b.hostel?.name || 'N/A';
+                document.getElementById('modal-booking-room').textContent = b.roomType;
+                document.getElementById('modal-booking-amount').textContent = `GHS ${b.amount}`;
+                document.getElementById('modal-booking-status').textContent = b.status;
+                document.getElementById('modal-booking-date').textContent = b.createdAt ? new Date(b.createdAt).toLocaleString() : 'N/A';
+                document.getElementById('modal-booking-id').textContent = b._id;
+                document.getElementById('booking-modal').style.display = 'block';
+              }
+            });
+          });
+        }
+        renderBookings();
+        document.getElementById('booking-status-filter').addEventListener('change', renderBookings);
+        document.getElementById('booking-date-filter').addEventListener('change', renderBookings);
+        document.getElementById('booking-filter').addEventListener('input', renderBookings);
+
+        // Add booking action listeners
+        document.querySelectorAll('.confirm-booking').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const roomNumber = prompt('Assign a room number to this tenant:');
+            if (!roomNumber) return;
+            try {
+              const response = await fetch(`/api/bookings/${btn.dataset.id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ status: 'confirmed', roomNumber })
+              });
+              if (response.ok) {
+                alert('Booking confirmed and room assigned successfully! Please inform the tenant to refresh their dashboard to see the updated payment information.');
+                window.location.reload();
+              }
+            } catch (error) {
+              console.error('Error confirming booking:', error);
+            }
+          });
+        });
+        document.querySelectorAll('.cancel-booking').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Cancel this booking? The user will be able to book another room after cancellation.')) return;
+            try {
+              const response = await fetch(`/api/bookings/${btn.dataset.id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ status: 'cancelled' })
+              });
+              if (response.ok) {
+                alert('Booking cancelled successfully. The user can now book another room if they don\'t have any pending bookings.');
+                window.location.reload();
+              }
+            } catch (error) {
+              console.error('Error cancelling booking:', error);
+            }
+          });
+        });
+
+        // Load and render profile update requests
+        let allProfileRequests = [];
+        async function loadProfileRequests() {
+          try {
+            const response = await fetch('/api/auth/profile-requests', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+              allProfileRequests = await response.json();
+              renderProfileRequests();
+              updatePendingProfileCount();
+            }
+          } catch (error) {
+            console.error('Error loading profile requests:', error);
+          }
+        }
+
+        function renderProfileRequests() {
+          const status = document.getElementById('profile-status-filter').value;
+          const search = document.getElementById('profile-filter').value.trim().toLowerCase();
+          const tbody = document.querySelector('#profile-requests-table tbody');
+          
+          const filtered = allProfileRequests.filter(req => {
+            let match = true;
+            if (status && req.status !== status) match = false;
+            if (search) {
+              const tenantName = req.user?.fullName?.toLowerCase() || '';
+              if (!tenantName.includes(search)) match = false;
+            }
+            return match;
+          });
+
+          tbody.innerHTML = filtered.map((req, idx) => `
+            <tr class="profile-request-row" data-idx="${idx}">
+              <td>${req.user?.fullName || 'N/A'}</td>
+              <td>${req.user?.fullName || 'N/A'}</td>
+              <td>${req.newName || 'No change'}</td>
+              <td>${req.user?.email || 'N/A'}</td>
+              <td>${req.newEmail || 'No change'}</td>
+              <td><span class="badge ${req.status}">${req.status}</span></td>
+              <td>${new Date(req.createdAt).toLocaleDateString()}</td>
+              <td>
+                ${req.status === 'pending' ? 
+                  `<button class="action-btn view-profile-request" data-id="${req._id}">View</button>` : 
+                  'No action needed'
+                }
+              </td>
+            </tr>
+          `).join('');
+
+          // Add click listeners for modal
+          document.querySelectorAll('.profile-request-row').forEach(row => {
+            row.addEventListener('click', function(e) {
+              if (e.target.classList.contains('action-btn')) return;
+              const idx = this.getAttribute('data-idx');
+              const req = filtered[idx];
+              if (req) {
+                document.getElementById('modal-profile-tenant').textContent = req.user?.fullName || 'N/A';
+                document.getElementById('modal-profile-current-name').textContent = req.user?.fullName || 'N/A';
+                document.getElementById('modal-profile-new-name').textContent = req.newName || 'No change';
+                document.getElementById('modal-profile-current-email').textContent = req.user?.email || 'N/A';
+                document.getElementById('modal-profile-new-email').textContent = req.newEmail || 'No change';
+                document.getElementById('modal-profile-status').textContent = req.status;
+                document.getElementById('modal-profile-submitted').textContent = new Date(req.createdAt).toLocaleString();
+                
+                // Show/hide action buttons based on status
+                const actionsDiv = document.getElementById('profile-request-actions');
+                if (req.status === 'pending') {
+                  actionsDiv.style.display = 'block';
+                  document.getElementById('approve-profile-request').dataset.id = req._id;
+                  document.getElementById('reject-profile-request').dataset.id = req._id;
+                } else {
+                  actionsDiv.style.display = 'none';
+                }
+                
+                document.getElementById('profile-request-modal').style.display = 'block';
+              }
+            });
+          });
+        }
+
+        // Profile request action listeners
+        document.getElementById('approve-profile-request').addEventListener('click', async function() {
+          const requestId = this.dataset.id;
+          try {
+            const response = await fetch(`/api/auth/profile-requests/${requestId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ status: 'approved' })
+            });
+            if (response.ok) {
+              document.getElementById('profile-request-modal').style.display = 'none';
+              loadProfileRequests();
+            }
+          } catch (error) {
+            console.error('Error approving profile request:', error);
+          }
+        });
+
+        document.getElementById('reject-profile-request').addEventListener('click', async function() {
+          const requestId = this.dataset.id;
+          try {
+            const response = await fetch(`/api/auth/profile-requests/${requestId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ status: 'rejected' })
+            });
+            if (response.ok) {
+              document.getElementById('profile-request-modal').style.display = 'none';
+              loadProfileRequests();
+            }
+          } catch (error) {
+            console.error('Error rejecting profile request:', error);
+          }
+        });
+
+        // Profile request filters
+        document.getElementById('profile-status-filter').addEventListener('change', renderProfileRequests);
+        document.getElementById('profile-filter').addEventListener('input', renderProfileRequests);
+
+        // Close profile request modal
+        document.getElementById('close-profile-request-modal').addEventListener('click', function() {
+          document.getElementById('profile-request-modal').style.display = 'none';
+        });
+
+        // Load profile requests
+        await loadProfileRequests();
+
+        // Update quick action cards
+        document.getElementById('pending-profile-count-card').textContent = allProfileRequests.filter(req => req.status === 'pending').length;
+        document.getElementById('pending-bookings-count-card').textContent = pendingBookings.length;
+
+        // Quick card click handlers
+        document.getElementById('pending-profile-card').onclick = function() {
+          // Simulate clicking the Profile Requests link
+          document.getElementById('profile-requests-link').click();
+        };
+        document.getElementById('pending-bookings-card').onclick = function() {
+          // Simulate clicking the Bookings link
+          document.querySelector('.sidebar nav a[href="#bookings"]').click();
+        };
+
+        // Recent activity feed
+        const recentActivity = [];
+        bookings.slice(-5).reverse().forEach(b => {
+          recentActivity.push({
+            type: 'booking',
+            text: `${b.user?.fullName || 'A tenant'} booked ${b.roomType} in ${b.hostel?.name || 'a hostel'} (${b.status})`,
+            date: b.createdAt
+          });
+        });
+        allProfileRequests.slice(-5).reverse().forEach(r => {
+          recentActivity.push({
+            type: 'profile',
+            text: `${r.user?.fullName || 'A tenant'} requested profile update (${r.status})`,
+            date: r.createdAt
+          });
+        });
+        recentActivity.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const activityList = document.getElementById('recent-activity-list');
+        activityList.innerHTML = recentActivity.slice(0, 7).map(act => `<li style="margin-bottom:0.5rem;"><span style="font-size:1.1em;">${act.type === 'booking' ? '📦' : '📝'}</span> ${act.text} <span style="color:#888;font-size:0.95em;">(${new Date(act.date).toLocaleString()})</span></li>`).join('');
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+
+      // Navigation
+      const sectionMap = {
+        'Dashboard': 'dashboard-section',
+        'Tenants': 'tenants-section',
+        'Bookings': 'bookings-section',
+        'Profile Requests': 'profile-requests-section',
+        'Hostels': 'hostels-section',
+        'Logout': null
+      };
+
+      const navLinks = document.querySelectorAll('.sidebar nav a');
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (link.id === 'logout-btn') {
+            e.preventDefault();
+            localStorage.clear();
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'admin-login.html';
+            return;
+          }
+          
+          if (link.getAttribute('href') === '../login.html') return;
+          e.preventDefault();
+
+          // Remove active class from all sections and links
+          document.querySelectorAll('.dashboard-section').forEach(sec => {
+            sec.classList.remove('active');
+          });
+
+          navLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+
+          // Get the section ID based on the link text or href
+          let sectionId = null;
+          if (link.textContent.trim() === 'Dashboard') {
+            sectionId = 'dashboard-section';
+          } else if (link.textContent.trim() === 'Tenants') {
+            sectionId = 'tenants-section';
+          } else if (link.textContent.trim() === 'Bookings') {
+            sectionId = 'bookings-section';
+          } else if (link.textContent.trim() === 'Profile Requests') {
+            sectionId = 'profile-requests-section';
+          } else if (link.textContent.trim() === 'Hostels' || link.getAttribute('href') === '#hostels') {
+            sectionId = 'hostels-section';
+            loadHostelsTable(); // Load hostels data when switching to hostels section
+          }
+
+          if (sectionId && document.getElementById(sectionId)) {
+            document.getElementById(sectionId).classList.add('active');
+          }
+        });
+      });
+
+      // Hostel Management Logic
+      let allHostels = [];
+      async function loadHostelsTable() {
+        try {
+          const res = await fetch('/api/hostels');
+          allHostels = await res.json();
+        } catch (e) { allHostels = []; }
+        renderHostelsTable();
+      }
+      function renderHostelsTable() {
+        const tbody = document.querySelector('#hostel-table tbody');
+        tbody.innerHTML = allHostels.map((h, idx) => `
+          <tr>
+            <td>${h.name}</td>
+            <td>${h.campus}</td>
+            <td>${(h.roomTypes||[]).map(r=>r.name).join(', ')}</td>
+            <td>
+              <button class="action-btn edit-hostel" data-idx="${idx}">Edit</button>
+              <button class="action-btn delete-hostel" data-idx="${idx}">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+        // Edit
+        document.querySelectorAll('.edit-hostel').forEach(btn => {
+          btn.onclick = function() {
+            const h = allHostels[this.dataset.idx];
+            document.getElementById('hostel-id').value = h._id || '';
+            document.getElementById('hostel-name').value = h.name;
+            document.getElementById('hostel-campus').value = h.campus;
+            document.getElementById('hostel-room-types').value = (h.roomTypes||[]).map(r=>r.name).join(', ');
+            document.getElementById('hostel-modal-title').textContent = 'Edit Hostel';
+            document.getElementById('hostel-modal').style.display = 'block';
+          };
+        });
+        // Delete
+        document.querySelectorAll('.delete-hostel').forEach(btn => {
+          btn.onclick = async function() {
+            const h = allHostels[this.dataset.idx];
+            if (confirm('Delete this hostel?')) {
+              await fetch(`/api/hostels/${h._id}`, { method: 'DELETE' });
+              loadHostelsTable();
+            }
+          };
+        });
+      }
+      document.getElementById('add-hostel-btn').onclick = function() {
+        document.getElementById('hostel-id').value = '';
+        document.getElementById('hostel-name').value = '';
+        document.getElementById('hostel-campus').value = '';
+        document.getElementById('hostel-room-types').value = '';
+        document.getElementById('hostel-modal-title').textContent = 'Add Hostel';
+        document.getElementById('hostel-modal').style.display = 'block';
+      };
+      document.getElementById('close-hostel-modal').onclick = function() {
+        document.getElementById('hostel-modal').style.display = 'none';
+      };
+      window.addEventListener('click', function(event) {
+        if (event.target === document.getElementById('hostel-modal')) {
+          document.getElementById('hostel-modal').style.display = 'none';
+        }
+      });
+      document.getElementById('hostel-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('hostel-id').value;
+        const name = document.getElementById('hostel-name').value.trim();
+        const campus = document.getElementById('hostel-campus').value.trim();
+        const roomTypes = document.getElementById('hostel-room-types').value.split(',').map(s=>({name:s.trim(),available:10,price:0})).filter(r=>r.name);
+        const body = JSON.stringify({ name, campus, roomTypes });
+        if (id) {
+          await fetch(`/api/hostels/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body });
+        } else {
+          await fetch('/api/hostels', { method: 'POST', headers: {'Content-Type':'application/json'}, body });
+        }
+        document.getElementById('hostel-modal').style.display = 'none';
+        loadHostelsTable();
+      };
+      // Remove duplicate event listeners - navigation is now handled above
+
+      // Update pending profile count
+      function updatePendingProfileCount() {
+        const pendingCount = allProfileRequests.filter(req => req.status === 'pending').length;
+        document.getElementById('pending-profile-count').textContent = `(${pendingCount})`;
+        document.getElementById('pending-profile-count-card').textContent = pendingCount;
+        if (pendingCount > 0) {
+          document.getElementById('profile-requests-link').classList.add('has-notifications');
+        } else {
+          document.getElementById('profile-requests-link').classList.remove('has-notifications');
+        }
+      }
+
+      // Spinner and Toast utilities
+      function showSpinner() {
+        document.getElementById('global-spinner').style.display = 'flex';
+      }
+      function hideSpinner() {
+        document.getElementById('global-spinner').style.display = 'none';
+      }
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `${message} <button class='toast-close'>&times;</button>`;
+        document.getElementById('toast-container').appendChild(toast);
+        toast.querySelector('.toast-close').onclick = () => toast.remove();
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
+      }
+
+      // Example: Integrate spinner/toast into profile request actions
+      document.getElementById('approve-profile-request').addEventListener('click', async function() {
+        const requestId = this.dataset.id;
+        showSpinner();
+        try {
+          const response = await fetch(`/api/auth/profile-requests/${requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ status: 'approved' })
+          });
+          if (response.ok) {
+            document.getElementById('profile-request-modal').style.display = 'none';
+            loadProfileRequests();
+            showToast('Profile update approved!', 'success');
+          } else {
+            showToast('Failed to approve request', 'error');
+          }
+        } catch (error) {
+          showToast('Error approving request', 'error');
+        }
+        hideSpinner();
+      });
+
+      document.getElementById('reject-profile-request').addEventListener('click', async function() {
+        const requestId = this.dataset.id;
+        showSpinner();
+        try {
+          const response = await fetch(`/api/auth/profile-requests/${requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ status: 'rejected' })
+          });
+          if (response.ok) {
+            document.getElementById('profile-request-modal').style.display = 'none';
+            loadProfileRequests();
+            showToast('Profile update rejected.', 'info');
+          } else {
+            showToast('Failed to reject request', 'error');
+          }
+        } catch (error) {
+          showToast('Error rejecting request', 'error');
+        }
+        hideSpinner();
+      });
+
+              // Example: Integrate spinner/toast into booking actions
+        document.querySelectorAll('.confirm-booking').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const roomNumber = prompt('Assign a room number to this tenant:');
+            if (!roomNumber) return;
+            showSpinner();
+            try {
+              const response = await fetch(`/api/bookings/${btn.dataset.id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ status: 'confirmed', roomNumber })
+              });
+              if (response.ok) {
+                window.location.reload();
+                showToast('Booking confirmed! Room assigned successfully.', 'success');
+              } else {
+                showToast('Failed to confirm booking', 'error');
+              }
+            } catch (error) {
+              showToast('Error confirming booking', 'error');
+            }
+            hideSpinner();
+          });
+        });
+      document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Cancel this booking?')) return;
+          showSpinner();
+          try {
+            const response = await fetch(`/api/bookings/${btn.dataset.id}/status`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ status: 'cancelled' })
+            });
+            if (response.ok) {
+              window.location.reload();
+              showToast('Booking cancelled.', 'info');
+            } else {
+              showToast('Failed to cancel booking', 'error');
+            }
+          } catch (error) {
+            showToast('Error cancelling booking', 'error');
+          }
+          hideSpinner();
+        });
+      });
+
+      // Mobile Navigation Functionality
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+      const closeMobileMenu = document.getElementById('close-mobile-menu');
+      const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+      // Toggle mobile menu
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileNavOverlay.classList.add('active');
+        mobileMenuBtn.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      });
+
+      // Close mobile menu
+      function closeMobileNav() {
+        mobileNavOverlay.classList.remove('active');
+        mobileMenuBtn.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+
+      closeMobileMenu.addEventListener('click', closeMobileNav);
+      mobileNavOverlay.addEventListener('click', function(e) {
+        if (e.target === mobileNavOverlay) {
+          closeMobileNav();
+        }
+      });
+
+      // Mobile navigation links
+      mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (link.id === 'mobile-logout-btn') {
+            e.preventDefault();
+            localStorage.clear();
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'admin-login.html';
+            return;
+          }
+          
+          if (link.getAttribute('href') === '../login.html') return;
+          e.preventDefault();
+
+          // Update active states
+          mobileNavLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+
+          // Navigate to section
+          const sectionId = link.getAttribute('href').substring(1) + '-section';
+          document.querySelectorAll('.dashboard-section').forEach(sec => {
+            sec.classList.remove('active');
+          });
+          
+          if (document.getElementById(sectionId)) {
+            document.getElementById(sectionId).classList.add('active');
+          }
+
+          // Close mobile menu
+          closeMobileNav();
+        });
+      });
+
+      // Touch-friendly interactions
+      let touchStartY = 0;
+      let touchEndY = 0;
+
+      document.addEventListener('touchstart', function(e) {
+        touchStartY = e.changedTouches[0].screenY;
+      });
+
+      document.addEventListener('touchend', function(e) {
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+      });
+
+      function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartY - touchEndY;
+        
+        // Swipe up to refresh (if at top of page)
+        if (diff > swipeThreshold && window.scrollY === 0) {
+          // Add pull-to-refresh functionality here if needed
+          showToast('Pull to refresh detected', 'info');
+        }
+      }
+
+      // Add mobile card views for tables
+      function createMobileCardView(tableId, cardContainerId) {
+        const table = document.getElementById(tableId);
+        const container = document.getElementById(cardContainerId);
+        
+        if (!table || !container) return;
+        
+        const rows = table.querySelectorAll('tbody tr');
+        container.innerHTML = '';
+        
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          const card = document.createElement('div');
+          card.className = 'mobile-card';
+          
+          // Extract data from table row
+          const data = Array.from(cells).map(cell => cell.textContent.trim());
+          
+          // Create card content based on table structure
+          card.innerHTML = `
+            <div class="mobile-card-header">
+              <div class="mobile-card-title">${data[0] || 'N/A'}</div>
+              <span class="mobile-card-status badge ${data[4] || 'pending'}">${data[4] || 'Pending'}</span>
+            </div>
+            <div class="mobile-card-content">
+              <div class="mobile-card-row">
+                <span class="mobile-card-label">Hostel:</span>
+                <span class="mobile-card-value">${data[1] || 'N/A'}</span>
+              </div>
+              <div class="mobile-card-row">
+                <span class="mobile-card-label">Room Type:</span>
+                <span class="mobile-card-value">${data[2] || 'N/A'}</span>
+              </div>
+              <div class="mobile-card-row">
+                <span class="mobile-card-label">Amount:</span>
+                <span class="mobile-card-value">${data[3] || 'N/A'}</span>
+              </div>
+            </div>
+            <div class="mobile-card-actions">
+              <button class="action-btn" onclick="viewDetails('${row.dataset.id || ''}')">View</button>
+              <button class="action-btn" onclick="confirmAction('${row.dataset.id || ''}')">Confirm</button>
+            </div>
+          `;
+          
+          container.appendChild(card);
+        });
+      }
+
+      // Initialize mobile card views
+      if (window.innerWidth <= 768) {
+        // Create mobile card containers for tables
+        const bookingsSection = document.getElementById('bookings-section');
+        if (bookingsSection) {
+          const table = bookingsSection.querySelector('table');
+          if (table) {
+            const mobileContainer = document.createElement('div');
+            mobileContainer.id = 'bookings-mobile-cards';
+            mobileContainer.className = 'mobile-card-view';
+            table.parentNode.insertBefore(mobileContainer, table);
+          }
+        }
+      }
+
+      // Responsive table to card conversion
+      function updateTableViews() {
+        if (window.innerWidth <= 768) {
+          // Show mobile cards, hide tables
+          document.querySelectorAll('.mobile-card-view').forEach(view => {
+            view.style.display = 'block';
+          });
+          document.querySelectorAll('table').forEach(table => {
+            table.style.display = 'none';
+          });
+        } else {
+          // Show tables, hide mobile cards
+          document.querySelectorAll('.mobile-card-view').forEach(view => {
+            view.style.display = 'none';
+          });
+          document.querySelectorAll('table').forEach(table => {
+            table.style.display = 'table';
+          });
+        }
+      }
+
+      // Update on window resize
+      window.addEventListener('resize', updateTableViews);
+      updateTableViews(); // Initial call
+      
+      // Close modal functions - ensure elements exist before adding listeners
+      function setupModalCloseListeners() {
+        const closeTenantModal = document.getElementById('close-tenant-modal');
+        const closeBookingModal = document.getElementById('close-booking-modal');
+        const closeProfileRequestModal = document.getElementById('close-profile-request-modal');
+        const closeHostelModal = document.getElementById('close-hostel-modal');
+        
+        if (closeTenantModal) {
+          closeTenantModal.addEventListener('click', (e) => {
+            console.log('🔴 Close tenant modal clicked');
+            e.stopPropagation(); // Prevent event bubbling
+            e.preventDefault(); // Prevent default behavior
+            document.getElementById('tenant-modal').style.display = 'none';
+            console.log('✅ Tenant modal closed');
+          });
+        }
+        
+        if (closeBookingModal) {
+          closeBookingModal.addEventListener('click', (e) => {
+            console.log('🔴 Close booking modal clicked');
+            e.stopPropagation(); // Prevent event bubbling
+            e.preventDefault(); // Prevent default behavior
+            document.getElementById('booking-modal').style.display = 'none';
+            console.log('✅ Booking modal closed');
+            // Visual feedback
+            closeBookingModal.style.backgroundColor = '#e74c3c';
+            closeBookingModal.style.color = '#fff';
+            setTimeout(() => {
+              closeBookingModal.style.backgroundColor = '';
+              closeBookingModal.style.color = '';
+            }, 200);
+          });
+        }
+        
+        if (closeProfileRequestModal) {
+          closeProfileRequestModal.addEventListener('click', (e) => {
+            console.log('🔴 Close profile request modal clicked');
+            e.stopPropagation(); // Prevent event bubbling
+            e.preventDefault(); // Prevent default behavior
+            document.getElementById('profile-request-modal').style.display = 'none';
+            console.log('✅ Profile request modal closed');
+          });
+        }
+        
+        if (closeHostelModal) {
+          closeHostelModal.addEventListener('click', (e) => {
+            console.log('🔴 Close hostel modal clicked');
+            e.stopPropagation(); // Prevent event bubbling
+            e.preventDefault(); // Prevent default behavior
+            document.getElementById('hostel-modal').style.display = 'none';
+            console.log('✅ Hostel modal closed');
+          });
+        }
+      }
+      
+      // Setup modal close listeners
+      setupModalCloseListeners();
+      
+      // Close modals when clicking outside
+      window.addEventListener('click', (event) => {
+        const modals = ['tenant-modal', 'booking-modal', 'profile-request-modal', 'hostel-modal'];
+        modals.forEach(modalId => {
+          const modal = document.getElementById(modalId);
+          if (modal && event.target === modal) {
+            // Only close if clicking directly on the modal backdrop, not on modal content
+            modal.style.display = 'none';
+          }
+        });
+      });
+      
+      // Close modals with ESC key
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          const modals = ['tenant-modal', 'booking-modal', 'profile-request-modal', 'hostel-modal'];
+          modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && modal.style.display === 'block') {
+              modal.style.display = 'none';
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

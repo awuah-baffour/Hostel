@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Booking Logic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        .success {
+            border-left-color: #27ae60;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background: #f8d7da;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Booking Logic</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: No Bookings</h2>
+        <p>When user has no bookings, they should be able to book a room.</p>
+        <button class="test-button" onclick="testNoBookings()">Test No Bookings</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Pending Booking</h2>
+        <p>When user has a pending booking, they should NOT be able to book another room.</p>
+        <button class="test-button" onclick="testPendingBooking()">Test Pending Booking</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Confirmed Booking</h2>
+        <p>When user has a confirmed booking, they SHOULD be able to book another room.</p>
+        <button class="test-button" onclick="testConfirmedBooking()">Test Confirmed Booking</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Multiple Confirmed Bookings</h2>
+        <p>User should be able to have multiple confirmed bookings.</p>
+        <button class="test-button" onclick="testMultipleConfirmed()">Test Multiple Confirmed</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Mixed Status Bookings</h2>
+        <p>Test scenarios with mixed booking statuses.</p>
+        <button class="test-button" onclick="testMixedStatus()">Test Mixed Status</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <script>
+        // Mock booking scenarios
+        const scenarios = {
+            noBookings: [],
+            pendingBooking: [
+                {
+                    _id: '1',
+                    hostel: { name: 'JL Hostels - STU' },
+                    roomType: '2 in a room',
+                    roomNumber: null,
+                    amount: 400,
+                    status: 'pending',
+                    createdAt: '2024-01-15T10:30:00Z'
+                }
+            ],
+            confirmedBooking: [
+                {
+                    _id: '2',
+                    hostel: { name: 'JL Hostels - STU' },
+                    roomType: '4 in a room',
+                    roomNumber: 'A101',
+                    amount: 500,
+                    status: 'confirmed',
+                    createdAt: '2024-01-16T14:20:00Z'
+                }
+            ],
+            multipleConfirmed: [
+                {
+                    _id: '3',
+                    hostel: { name: 'JL Hostels - STU' },
+                    roomType: '2 in a room',
+                    roomNumber: 'A102',
+                    amount: 400,
+                    status: 'confirmed',
+                    createdAt: '2024-01-15T10:30:00Z'
+                },
+                {
+                    _id: '4',
+                    hostel: { name: 'JL Hostels - UENR' },
+                    roomType: '4 in a room',
+                    roomNumber: 'B201',
+                    amount: 500,
+                    status: 'confirmed',
+                    createdAt: '2024-01-16T14:20:00Z'
+                }
+            ],
+            mixedStatus: [
+                {
+                    _id: '5',
+                    hostel: { name: 'JL Hostels - STU' },
+                    roomType: '2 in a room',
+                    roomNumber: 'A103',
+                    amount: 400,
+                    status: 'confirmed',
+                    createdAt: '2024-01-15T10:30:00Z'
+                },
+                {
+                    _id: '6',
+                    hostel: { name: 'JL Hostels - STU' },
+                    roomType: '4 in a room',
+                    roomNumber: null,
+                    amount: 500,
+                    status: 'pending',
+                    createdAt: '2024-01-16T14:20:00Z'
+                }
+            ]
+        };
+
+        function analyzeBookings(bookings) {
+            const pendingBooking = bookings.find(b => b.status === 'pending');
+            const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+            const cancelledBookings = bookings.filter(b => b.status === 'cancelled');
+            
+            return {
+                canBook: !pendingBooking, // Can only book if no pending booking
+                pendingCount: pendingBooking ? 1 : 0,
+                confirmedCount: confirmedBookings.length,
+                cancelledCount: cancelledBookings.length,
+                totalCount: bookings.length
+            };
+        }
+
+        function testNoBookings() {
+            const result = document.getElementById('test1-result');
+            const analysis = analyzeBookings(scenarios.noBookings);
+            
+            result.innerHTML = `
+                <div class="result success">
+                    <h4>✅ No Bookings Scenario</h4>
+                    <p><strong>Can Book:</strong> ${analysis.canBook ? 'Yes' : 'No'}</p>
+                    <p><strong>Total Bookings:</strong> ${analysis.totalCount}</p>
+                    <p><strong>Expected Behavior:</strong> User should be able to book a room.</p>
+                    <p><strong>Button Text:</strong> "Book Room"</p>
+                    <p><strong>Button State:</strong> Enabled</p>
+                </div>
+            `;
+        }
+
+        function testPendingBooking() {
+            const result = document.getElementById('test2-result');
+            const analysis = analyzeBookings(scenarios.pendingBooking);
+            
+            result.innerHTML = `
+                <div class="result error">
+                    <h4>⏳ Pending Booking Scenario</h4>
+                    <p><strong>Can Book:</strong> ${analysis.canBook ? 'Yes' : 'No'}</p>
+                    <p><strong>Pending Bookings:</strong> ${analysis.pendingCount}</p>
+                    <p><strong>Confirmed Bookings:</strong> ${analysis.confirmedCount}</p>
+                    <p><strong>Expected Behavior:</strong> User should NOT be able to book another room.</p>
+                    <p><strong>Button Text:</strong> "Booking Pending"</p>
+                    <p><strong>Button State:</strong> Disabled</p>
+                    <p><strong>Status Message:</strong> "You have a pending booking... Please wait for admin approval."</p>
+                </div>
+            `;
+        }
+
+        function testConfirmedBooking() {
+            const result = document.getElementById('test3-result');
+            const analysis = analyzeBookings(scenarios.confirmedBooking);
+            
+            result.innerHTML = `
+                <div class="result success">
+                    <h4>✅ Confirmed Booking Scenario</h4>
+                    <p><strong>Can Book:</strong> ${analysis.canBook ? 'Yes' : 'No'}</p>
+                    <p><strong>Pending Bookings:</strong> ${analysis.pendingCount}</p>
+                    <p><strong>Confirmed Bookings:</strong> ${analysis.confirmedCount}</p>
+                    <p><strong>Expected Behavior:</strong> User SHOULD be able to book another room.</p>
+                    <p><strong>Button Text:</strong> "Book Another Room"</p>
+                    <p><strong>Button State:</strong> Enabled</p>
+                    <p><strong>Status Message:</strong> "You have a confirmed booking... Your booking is confirmed and you can see payment details in the Payments section."</p>
+                </div>
+            `;
+        }
+
+        function testMultipleConfirmed() {
+            const result = document.getElementById('test4-result');
+            const analysis = analyzeBookings(scenarios.multipleConfirmed);
+            
+            result.innerHTML = `
+                <div class="result success">
+                    <h4>✅ Multiple Confirmed Bookings Scenario</h4>
+                    <p><strong>Can Book:</strong> ${analysis.canBook ? 'Yes' : 'No'}</p>
+                    <p><strong>Pending Bookings:</strong> ${analysis.pendingCount}</p>
+                    <p><strong>Confirmed Bookings:</strong> ${analysis.confirmedCount}</p>
+                    <p><strong>Expected Behavior:</strong> User should be able to book additional rooms.</p>
+                    <p><strong>Button Text:</strong> "Book Another Room"</p>
+                    <p><strong>Button State:</strong> Enabled</p>
+                    <p><strong>Note:</strong> User can have multiple confirmed bookings across different hostels.</p>
+                </div>
+            `;
+        }
+
+        function testMixedStatus() {
+            const result = document.getElementById('test4-result');
+            const analysis = analyzeBookings(scenarios.mixedStatus);
+            
+            result.innerHTML = `
+                <div class="result error">
+                    <h4>⚠️ Mixed Status Scenario</h4>
+                    <p><strong>Can Book:</strong> ${analysis.canBook ? 'Yes' : 'No'}</p>
+                    <p><strong>Pending Bookings:</strong> ${analysis.pendingCount}</p>
+                    <p><strong>Confirmed Bookings:</strong> ${analysis.confirmedCount}</p>
+                    <p><strong>Expected Behavior:</strong> User should NOT be able to book because there's a pending booking.</p>
+                    <p><strong>Button Text:</strong> "Booking Pending"</p>
+                    <p><strong>Button State:</strong> Disabled</p>
+                    <p><strong>Note:</strong> Even if user has confirmed bookings, a pending booking blocks new bookings.</p>
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testNoBookings();
+                testPendingBooking();
+                testConfirmedBooking();
+                testMultipleConfirmed();
+                testMixedStatus();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

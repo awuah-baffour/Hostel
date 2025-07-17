@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - JL HOSTELS</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-bg"></div>
+  
+  <!-- Campus Selection Section -->
+  <div id="campus-selection" class="form-card login-card">
+    <div class="login-logo" style="justify-content: center;">
+      <h1 style="margin: 0; font-size: 2.2rem; color: #3498db; font-weight: 800; letter-spacing: 1.5px;">JL HOSTELS</h1>
+    </div>
+    <p class="login-sub">Select your university campus to get started</p>
+    
+    <div class="campus-btn-group">
+      <button class="campus-btn" data-campus="STU">
+        <div class="campus-btn-content">
+          <span class="campus-icon">🏛️</span>
+          <div class="campus-info">
+            <strong>STU</strong>
+            <span>Sunyani Technical University</span>
+          </div>
+        </div>
+      </button>
+      
+      <button class="campus-btn" data-campus="UENR">
+        <div class="campus-btn-content">
+          <span class="campus-icon">🏫</span>
+          <div class="campus-info">
+            <strong>UENR</strong>
+            <span>University of Energy & Natural Resources</span>
+          </div>
+        </div>
+      </button>
+      
+      <button class="campus-btn" data-campus="Other">
+        <div class="campus-btn-content">
+          <span class="campus-icon">🏠</span>
+          <div class="campus-info">
+            <strong>Other Campuses</strong>
+            <span>Outstations</span>
+          </div>
+        </div>
+      </button>
+    </div>
+    
+    <p class="login-link">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <!-- Registration Form Section -->
+  <div id="register-section" class="form-card login-card hide">
+    <div class="login-logo" style="justify-content: center;">
+      <h1 style="margin: 0; font-size: 2.2rem; color: #3498db; font-weight: 800; letter-spacing: 1.5px;">JL HOSTELS</h1>
+    </div>
+    <p class="login-sub">Join JL HOSTELS for comfortable student accommodation</p>
+    
+    <form id="register-form" autocomplete="off">
+      <div class="input-group">
+        <input type="text" placeholder="Full Name" aria-label="Full Name" required />
+      </div>
+      
+      <div class="input-group">
+        <input type="email" placeholder="Email Address" aria-label="Email" required />
+      </div>
+      <div class="input-group">
+        <input type="tel" id="phone" name="phone" placeholder="Phone Number" aria-label="Phone Number" required pattern="[0-9\-\+\s]{7,15}" />
+      </div>
+      
+      <div class="input-group password-group">
+        <input type="password" placeholder="Password" aria-label="Password" id="passwordInput" required autocomplete="off" />
+        <button type="button" id="togglePassword" aria-label="Show or hide password">
+          <img src="images/eye.svg" alt="Show">
+        </button>
+      </div>
+      
+      <div class="input-group password-group">
+        <input type="password" placeholder="Confirm Password" aria-label="Confirm Password" id="confirmPasswordInput" required autocomplete="off" />
+        <button type="button" id="toggleConfirmPassword" aria-label="Show or hide confirm password">
+          <img src="images/eye.svg" alt="Show">
+        </button>
+      </div>
+      
+      <div class="input-group">
+        <label for="gender" style="display:block;margin-bottom:0.3rem;">Gender</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      
+      <div class="input-group">
+      <select id="hostel-select" required title="Select Hostel">
+        <option value=''>Select Hostel</option>
+          <option value="BLOCK A">BLOCK A</option>
+      </select>
+      </div>
+      <!-- New fields for Skill Set, Interests, and Current Business Venture -->
+      <div class="input-group">
+        <input type="text" id="skill-set" name="skillSet" placeholder="Skill Set" aria-label="Skill Set" />
+      </div>
+      <div class="input-group">
+        <input type="text" id="interests" name="interests" placeholder="Interests" aria-label="Interests" />
+      </div>
+      <div class="input-group">
+        <textarea id="current-business" name="currentBusiness" placeholder="Current Business Venture (if any)" aria-label="Current Business Venture (if any)" rows="2" style="resize:vertical;"></textarea>
+      </div>
+      
+      <div class="campus-display">
+        <p><strong>Selected Campus:</strong> <span id="selected-campus-display"></span></p>
+      </div>
+      
+      <input type="hidden" id="campus-input" name="campus" />
+      
+      <div id="register-message" aria-live="polite"></div>
+      
+      <button type="submit">Create Account</button>
+    </form>
+    
+    <p class="login-link">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <!-- Campus Unavailable Modal -->
+  <div id="campus-unavailable-modal" class="modal hide">
+    <div class="modal-content">
+      <h3>🚧 Service Unavailable</h3>
+      <p>We're sorry, but JL HOSTELS is currently only available for STU and UENR campuses. We're working to expand our services to other campuses soon!</p>
+      <p><strong>Available Campuses:</strong></p>
+      <ul style="text-align: left; margin: 1rem 0; padding-left: 2rem;">
+        <li>🏛️ STU - Sunyani Technical University</li>
+        <li>🏫 UENR - University of Energy & Natural Resources</li>
+      </ul>
+      <button id="close-campus-modal" class="action-btn">Got it!</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Password toggle functionality
+      const passwordInput = document.getElementById("passwordInput");
+      const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+      const togglePassword = document.getElementById("togglePassword");
+      const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+      
+      function setupPasswordToggle(input, toggleBtn) {
+        if (toggleBtn && input) {
+          toggleBtn.addEventListener("click", () => {
+            if (input.type === "password") {
+              input.type = "text";
+              toggleBtn.querySelector('img').src = "images/eye-off.svg";
+              toggleBtn.querySelector('img').alt = "Hide password";
+            } else {
+              input.type = "password";
+              toggleBtn.querySelector('img').src = "images/eye.svg";
+              toggleBtn.querySelector('img').alt = "Show password";
+            }
+          });
+        }
+      }
+      
+      setupPasswordToggle(passwordInput, togglePassword);
+      setupPasswordToggle(confirmPasswordInput, toggleConfirmPassword);
+
+    // Campus selection logic
+    document.querySelectorAll('.campus-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var campus = btn.getAttribute('data-campus');
+          
+          if (campus === 'Other') {
+            // Show unavailable modal for other campuses
+            const modal = document.getElementById('campus-unavailable-modal');
+            modal.style.display = 'block';
+            modal.classList.remove('hide');
+            modal.classList.add('show');
+            document.body.classList.add('modal-active');
+          } else {
+            // Proceed with registration for available campuses
+            document.getElementById('campus-selection').classList.add('hide');
+        document.getElementById('register-section').classList.remove('hide');
+        document.getElementById('campus-input').value = campus;
+            document.getElementById('selected-campus-display').textContent = campus;
+          }
+      });
+    });
+
+      // Close campus unavailable modal
+      document.getElementById('close-campus-modal').addEventListener('click', function() {
+        const modal = document.getElementById('campus-unavailable-modal');
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        modal.classList.add('hide');
+        document.body.classList.remove('modal-active');
+      });
+
+      // Back to campus selection
+      function addBackButton() {
+        const backBtn = document.createElement('button');
+        backBtn.type = 'button';
+        backBtn.className = 'back-btn';
+        backBtn.innerHTML = '← Back to Campus Selection';
+        backBtn.style.cssText = `
+          background: none;
+          border: none;
+          color: #3498db;
+          cursor: pointer;
+          font-size: 0.9rem;
+          margin-bottom: 1rem;
+          text-decoration: underline;
+        `;
+        
+        backBtn.addEventListener('click', () => {
+          document.getElementById('register-section').classList.add('hide');
+          document.getElementById('campus-selection').classList.remove('hide');
+        });
+        
+        const registerForm = document.getElementById('register-form');
+        registerForm.parentNode.insertBefore(backBtn, registerForm);
+      }
+      
+      addBackButton();
+
+    // Registration form submission
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+        const fullName = document.querySelector('input[type="text"]').value;
+      const email = document.querySelector('input[type="email"]').value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+      const campus = document.getElementById('campus-input').value;
+      const hostel = document.getElementById('hostel-select').value;
+        const gender = document.getElementById('gender').value;
+        
+        // Clear previous messages
+        const messageDiv = document.getElementById('register-message');
+        messageDiv.textContent = '';
+        messageDiv.className = '';
+        
+        // Validation
+        if (password !== confirmPassword) {
+          messageDiv.textContent = 'Passwords do not match';
+          messageDiv.className = 'error';
+          return;
+        }
+        
+        if (password.length < 6) {
+          messageDiv.textContent = 'Password must be at least 6 characters long';
+          messageDiv.className = 'error';
+          return;
+        }
+      
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName, email, password, campus, hostel, gender })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            messageDiv.textContent = 'Registration successful! Redirecting...';
+            messageDiv.className = 'success';
+            
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('campus', data.campus);
+          
+            setTimeout(() => {
+          if (data.campus === 'STU') {
+            window.location.href = 'dashboard/tenant.html';
+            } else if (data.campus === 'UENR') {
+            window.location.href = 'dashboard/tenant.html';
+          } else {
+            window.location.href = 'login.html';
+          }
+            }, 1500);
+        } else {
+            messageDiv.textContent = data.message || 'Registration failed';
+            messageDiv.className = 'error';
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+          messageDiv.textContent = 'Registration failed. Please try again.';
+          messageDiv.className = 'error';
+      }
+      });
+    });
+  </script>
+</body>
+</html>

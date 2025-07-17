@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#3498db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="JL Hostels STU Admin">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>STU Campus Admin - JL HOSTELS</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="admin-dashboard">
+  <div id="global-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:2000;align-items:center;justify-content:center;">
+    <div style="border:6px solid #eee;border-top:6px solid #3498db;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+  </div>
+  <div id="toast-container" style="position:fixed;top:2rem;right:2rem;z-index:3000;display:flex;flex-direction:column;gap:0.7rem;"></div>
+  
+  <!-- Mobile Menu Button -->
+  <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  
+  <!-- Mobile Navigation Overlay -->
+  <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+    <div class="mobile-nav-content">
+      <div class="mobile-nav-header">
+        <h2>🏛️ STU Admin</h2>
+        <button id="close-mobile-menu" class="close-mobile-menu">&times;</button>
+      </div>
+      <nav class="mobile-nav">
+        <a href="#dashboard" class="mobile-nav-link active">Dashboard</a>
+        <a href="#tenants" class="mobile-nav-link">Tenants</a>
+        <a href="#bookings" class="mobile-nav-link">Bookings</a>
+        <a href="#profile-requests" class="mobile-nav-link" id="mobile-profile-requests-link">Profile Requests</a>
+        <a href="#tour-requests" class="mobile-nav-link" id="mobile-tour-requests-link">Tour Requests</a>
+        <a href="#hostels" class="mobile-nav-link">Hostels</a>
+        <a href="../login.html" class="mobile-nav-link" id="mobile-logout-btn">Logout</a>
+      </nav>
+    </div>
+  </div>
+  
+  <div class="dashboard-container">
+    <aside class="sidebar" aria-label="Sidebar Navigation">
+      <h2>🏛️ STU Admin</h2>
+      <p style="color: #bfc9d1; font-size: 0.9rem; margin-bottom: 2rem;">Sunyani Technical University</p>
+      <nav>
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#tenants">Tenants</a>
+        <a href="#bookings">Bookings</a>
+        <a href="#profile-requests" id="profile-requests-link">Profile Requests</a>
+        <a href="#tour-requests" id="tour-requests-link">Tour Requests</a>
+        <a href="#hostels">Hostels</a>
+        <a href="../login.html" id="logout-btn">Logout</a>
+      </nav>
+    </aside>
+    
+    <div class="main-content">
+      <section class="dashboard-section active" id="dashboard-section">
+        <h2>📊 STU Campus Overview</h2>
+        <div class="quick-actions" style="display:flex;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div class="quick-card" id="pending-profile-card" style="background:#fff3e0;border-radius:10px;padding:1.2rem 2rem;box-shadow:0 2px 8px #e67e2244;min-width:200px;display:flex;align-items:center;gap:1rem;cursor:pointer;">
+            <span style="font-size:2rem;">📝</span>
+            <div>
+              <div style="font-size:1.2rem;font-weight:600;color:#e67e22;" id="pending-profile-count-card">0</div>
+              <div style="font-size:1rem;color:#b36b00;">Pending Profile Requests</div>
+            </div>
+          </div>
+          <div class="quick-card" id="pending-bookings-card" style="background:#e3fcec;border-radius:10px;padding:1.2rem 2rem;box-shadow:0 2px 8px #27ae6044;min-width:200px;display:flex;align-items:center;gap:1rem;cursor:pointer;">
+            <span style="font-size:2rem;">📦</span>
+            <div>
+              <div style="font-size:1.2rem;font-weight:600;color:#27ae60;" id="pending-bookings-count-card">0</div>
+              <div style="font-size:1rem;color:#1e824c;">Pending Bookings</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="recent-activity" style="margin-bottom:2rem;">
+          <h3 style="font-size:1.1rem;color:#30415d;margin-bottom:0.7rem;">Recent STU Activity</h3>
+          <ul id="recent-activity-list" style="list-style:none;padding:0;margin:0;"></ul>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3 id="total-tenants">0</h3>
+            <p>STU Tenants</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="pending-bookings">0</h3>
+            <p>Pending Bookings</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="total-revenue">GHS 0</h3>
+            <p>STU Revenue</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="occupancy-rate">0%</h3>
+            <p>STU Occupancy</p>
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <canvas id="dashboardChart" height="80"></canvas>
+        </div>
+      </section>
+      
+      <section class="dashboard-section" id="tenants-section">
+        <h2>👤 STU Tenants</h2>
+        <input type="text" id="tenant-search" placeholder="Search STU tenants by name, email, or hostel..." style="margin-bottom:1rem;width:100%;max-width:400px;padding:0.5rem;">
+        <ul class="tenant-list" id="tenant-list">
+          <!-- STU Tenants will be loaded here -->
+        </ul>
+        <div id="tenant-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-tenant-modal">&times;</span>
+            <h3 id="modal-tenant-name"></h3>
+            <p><strong>Email:</strong> <span id="modal-tenant-email"></span></p>
+            <p><strong>Hostel:</strong> <span id="modal-tenant-hostel"></span></p>
+            <p><strong>Campus:</strong> <span id="modal-tenant-campus"></span></p>
+            <p><strong>Role:</strong> <span id="modal-tenant-role"></span></p>
+            <p><strong>Room:</strong> <span id="modal-tenant-room"></span></p>
+            <p><strong>Assigned:</strong> <span id="modal-tenant-assigned"></span></p>
+          </div>
+        </div>
+      </section>
+      
+      <section class="dashboard-section" id="bookings-section">
+        <h2>📦 STU Bookings</h2>
+        <div class="filter-container">
+          <div class="filter-group">
+            <label for="booking-status-filter">Status</label>
+            <select id="booking-status-filter">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="booking-date-filter">Date</label>
+            <input type="date" id="booking-date-filter">
+          </div>
+          <div class="filter-group">
+            <label for="booking-gender-filter">Gender</label>
+            <select id="booking-gender-filter">
+              <option value="">All Genders</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="filter-group" style="flex: 1; min-width: 200px;">
+            <label for="booking-filter">Search</label>
+            <input type="text" id="booking-filter" placeholder="Search by tenant, hostel, room type, room number, or amount...">
+          </div>
+        </div>
+        <table id="pending-bookings-table">
+          <thead>
+            <tr>
+              <th data-sort="tenant">Tenant <span class="sort-icon"></span></th>
+              <th data-sort="hostel">Hostel <span class="sort-icon"></span></th>
+              <th data-sort="roomType">Room Type <span class="sort-icon"></span></th>
+              <th data-sort="gender">Gender <span class="sort-icon"></span></th>
+              <th data-sort="roomNumber">Room # <span class="sort-icon"></span></th>
+              <th data-sort="amount">Amount <span class="sort-icon"></span></th>
+              <th data-sort="status">Status <span class="sort-icon"></span></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- STU bookings will be listed here -->
+          </tbody>
+        </table>
+        
+        <!-- Mobile Bookings Container -->
+        <div id="mobile-bookings-container" class="mobile-bookings-container" style="display: none;">
+          <!-- Mobile booking cards will be rendered here -->
+        </div>
+        <div id="booking-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-booking-modal">&times;</span>
+            <h3>STU Booking Details</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <p><strong>Tenant:</strong> <span id="modal-booking-tenant"></span></p>
+              <p><strong>Hostel:</strong> <span id="modal-booking-hostel"></span></p>
+              <p><strong>Room Type:</strong> <span id="modal-booking-room"></span></p>
+              <p><strong>Room Number:</strong> <span id="modal-booking-room-number"></span></p>
+              <p><strong>Amount:</strong> <span id="modal-booking-amount"></span></p>
+              <p><strong>Status:</strong> <span id="modal-booking-status"></span></p>
+              <p><strong>Booking Date:</strong> <span id="modal-booking-date"></span></p>
+              <p><strong>Booking ID:</strong> <span id="modal-booking-id"></span></p>
+            </div>
+            <div id="modal-booking-notes" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; display: none;">
+              <strong>Room Notes:</strong> <span id="modal-booking-notes-text"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section class="dashboard-section" id="profile-requests-section">
+        <h2>📝 STU Profile Update Requests <span id="pending-profile-count" style="font-size:1rem;color:#e67e22;margin-left:1rem;"></span></h2>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+          <select id="profile-status-filter" style="padding:0.5rem;">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <input type="text" id="profile-filter" placeholder="Search by STU tenant name..." style="padding:0.5rem;flex:1;min-width:180px;">
+        </div>
+        <table id="profile-requests-table">
+          <thead>
+            <tr>
+              <th data-sort="tenantName">Tenant <span class="sort-icon"></span></th>
+              <th data-sort="currentName">Current Name <span class="sort-icon"></span></th>
+              <th data-sort="newName">New Name <span class="sort-icon"></span></th>
+              <th data-sort="currentEmail">Current Email <span class="sort-icon"></span></th>
+              <th data-sort="newEmail">New Email <span class="sort-icon"></span></th>
+              <th data-sort="status">Status <span class="sort-icon"></span></th>
+              <th data-sort="submittedAt">Submitted <span class="sort-icon"></span></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- STU profile requests will be listed here -->
+          </tbody>
+        </table>
+        <div id="profile-request-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-profile-request-modal">&times;</span>
+            <h3>STU Profile Update Request Details</h3>
+            <p><strong>Tenant:</strong> <span id="modal-profile-tenant"></span></p>
+            <p><strong>Current Name:</strong> <span id="modal-profile-current-name"></span></p>
+            <p><strong>New Name:</strong> <span id="modal-profile-new-name"></span></p>
+            <p><strong>Current Email:</strong> <span id="modal-profile-current-email"></span></p>
+            <p><strong>New Email:</strong> <span id="modal-profile-new-email"></span></p>
+            <p><strong>Status:</strong> <span id="modal-profile-status"></span></p>
+            <p><strong>Submitted:</strong> <span id="modal-profile-submitted"></span></p>
+            <div id="profile-request-actions" style="margin-top:1rem;">
+              <button id="approve-profile-request" class="btn-approve">Approve</button>
+              <button id="reject-profile-request" class="btn-reject">Reject</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section class="dashboard-section" id="tour-requests-section">
+        <h2>🚌 STU Tour Requests</h2>
+        <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;">
+          <input type="text" id="tour-search" placeholder="Search by name, email, or phone..." style="padding:0.5rem;flex:1;max-width:300px;">
+        </div>
+        <table id="tour-requests-table">
+          <thead>
+            <tr>
+              <th data-sort="name">Name <span class="sort-icon"></span></th>
+              <th data-sort="email">Email <span class="sort-icon"></span></th>
+              <th data-sort="phone">Phone <span class="sort-icon"></span></th>
+              <th data-sort="preferredDate">Date <span class="sort-icon"></span></th>
+              <th data-sort="preferredTime">Time <span class="sort-icon"></span></th>
+              <th data-sort="message">Message <span class="sort-icon"></span></th>
+              <th data-sort="createdAt">Submitted <span class="sort-icon"></span></th>
+              <th data-sort="status">Status <span class="sort-icon"></span></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Tour requests will be loaded here -->
+          </tbody>
+        </table>
+      </section>
+      
+      <section class="dashboard-section" id="hostels-section">
+        <h2>🏨 STU Hostel Management</h2>
+        <button id="add-hostel-btn" class="btn-view">Add STU Hostel</button>
+        <table id="hostel-table">
+          <thead>
+            <tr><th>Name</th><th>Room Types</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <!-- STU hostels will be loaded here -->
+          </tbody>
+        </table>
+        <div id="hostel-modal" class="modal" style="display:none;">
+          <div class="modal-content">
+            <span class="close-modal" id="close-hostel-modal">&times;</span>
+            <h3 id="hostel-modal-title">Add STU Hostel</h3>
+            <form id="hostel-form">
+              <div class="input-group">
+                <label for="hostel-name">Hostel Name</label>
+                <input type="text" id="hostel-name" required>
+              </div>
+              <div class="input-group">
+                <label for="hostel-room-types">Room Types (comma-separated)</label>
+                <input type="text" id="hostel-room-types" placeholder="e.g., Single, Double, Triple" required>
+              </div>
+              <button type="submit" class="btn-approve">Save Hostel</button>
+            </form>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Room Assignment Modal -->
+      <div id="room-assignment-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal" id="close-room-assignment-modal">&times;</span>
+          <h3>Assign Room Number</h3>
+          <div id="booking-details" style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+            <p><strong>Student:</strong> <span id="modal-student-name"></span></p>
+            <p><strong>Hostel:</strong> <span id="modal-hostel-name"></span></p>
+            <p><strong>Room Type:</strong> <span id="modal-room-type"></span></p>
+            <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+          </div>
+          <form id="room-assignment-form">
+            <div class="input-group">
+              <label for="room-number">Room Number *</label>
+              <input type="text" id="room-number" placeholder="e.g., A101, B205" required>
+            </div>
+            <div class="input-group">
+              <label for="room-notes">Additional Notes (Optional)</label>
+              <textarea id="room-notes" placeholder="Any special instructions or notes about the room assignment..."></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+              <button type="submit" class="btn-approve">Confirm Assignment</button>
+              <button type="button" class="btn-reject" onclick="closeRoomAssignmentModal()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // STU Campus Admin JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+      const campus = 'STU';
+      
+      // Check if user is logged in and has admin role for STU
+      const token = localStorage.getItem('token');
+      const userRole = localStorage.getItem('role');
+      const userCampus = localStorage.getItem('campus');
+      
+      if (!token || userRole !== 'admin' || userCampus !== 'STU') {
+        alert('Access denied. You must be an STU admin to access this page.');
+        window.location.href = '../login.html';
+        return;
+      }
+      
+      // Initialize dashboard
+      function loadDashboardData() {
+        loadTenants();
+        loadBookings();
+        loadProfileRequests();
+        loadTourRequests();
+        loadRecentActivity();
+        loadDashboardStats(); // Add this line to load dashboard stats
+      }
+
+      // Load initial data
+      loadDashboardData();
+      
+      // Setup navigation and event listeners
+      setupNavigation();
+      setupMobileNavigation();
+      setupEventListeners();
+      
+      function loadRecentActivity() {
+        fetch(`/api/admin/recent-activity/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(activities => {
+          const activityList = document.getElementById('recent-activity-list');
+          activityList.innerHTML = '';
+          
+          if (activities && activities.length > 0) {
+            activities.forEach(activity => {
+              const li = document.createElement('li');
+              li.style.cssText = 'padding:0.8rem;margin-bottom:0.5rem;background:#f8f9fa;border-radius:8px;border-left:4px solid #3498db;';
+              li.innerHTML = `
+                <div style="font-weight:600;color:#30415d;">${activity.title || 'Activity'}</div>
+                <div style="font-size:0.9rem;color:#666;">${activity.description || 'No description available'}</div>
+                <div style="font-size:0.8rem;color:#999;margin-top:0.3rem;">${activity.timestamp || 'Unknown time'}</div>
+              `;
+              activityList.appendChild(li);
+            });
+          } else {
+            // Show a message when there's no activity
+            activityList.innerHTML = '<li style="padding:0.8rem;margin-bottom:0.5rem;background:#f8f9fa;border-radius:8px;border-left:4px solid #95a5a6;color:#7f8c8d;text-align:center;">No recent activity</li>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading recent activity:', error);
+          const activityList = document.getElementById('recent-activity-list');
+          activityList.innerHTML = '<li style="padding:0.8rem;margin-bottom:0.5rem;background:#f8f9fa;border-radius:8px;border-left:4px solid #e74c3c;color:#c0392b;text-align:center;">Error loading activity</li>';
+        });
+      }
+      
+      function loadDashboardStats() {
+        console.log('📊 Loading dashboard stats for campus:', campus);
+        console.log('🔑 Token available:', !!token);
+        
+        fetch(`/api/admin/dashboard/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => {
+          console.log('📥 Dashboard stats response status:', response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(stats => {
+          console.log('📥 Dashboard stats received:', stats);
+          
+          // Update dashboard stat cards
+          const totalTenantsElement = document.getElementById('total-tenants');
+          const pendingBookingsElement = document.getElementById('pending-bookings');
+          const totalRevenueElement = document.getElementById('total-revenue');
+          const occupancyRateElement = document.getElementById('occupancy-rate');
+          const pendingProfileCard = document.getElementById('pending-profile-count-card');
+          const pendingBookingsCard = document.getElementById('pending-bookings-count-card');
+          
+          if (totalTenantsElement) totalTenantsElement.textContent = stats.totalTenants || 0;
+          if (pendingBookingsElement) pendingBookingsElement.textContent = stats.pendingBookings || 0;
+          
+          // Calculate total revenue from confirmed bookings
+          const totalRevenue = stats.totalRevenue || 0;
+          if (totalRevenueElement) totalRevenueElement.textContent = `GHS ${totalRevenue.toLocaleString()}`;
+          
+          // Calculate occupancy rate (confirmed bookings / total capacity)
+          const occupancyRate = stats.occupancyRate || 0;
+          if (occupancyRateElement) occupancyRateElement.textContent = `${occupancyRate}%`;
+          
+          // Update quick action cards
+          if (pendingProfileCard) pendingProfileCard.textContent = stats.pendingProfileRequests || 0;
+          if (pendingBookingsCard) pendingBookingsCard.textContent = stats.pendingBookings || 0;
+          
+          // Update profile requests count in section header
+          const profileCountElement = document.getElementById('pending-profile-count');
+          if (profileCountElement) {
+            profileCountElement.textContent = `(${stats.pendingProfileRequests || 0})`;
+          }
+          
+          console.log('✅ Dashboard stats updated successfully');
+          console.log('📊 Final stats:', {
+            totalTenants: stats.totalTenants,
+            pendingBookings: stats.pendingBookings,
+            totalRevenue: stats.totalRevenue,
+            occupancyRate: stats.occupancyRate,
+            pendingProfileRequests: stats.pendingProfileRequests
+          });
+        })
+        .catch(error => {
+          console.error('❌ Error loading dashboard stats:', error);
+          showToast('Error loading dashboard stats', 'error');
+        });
+      }
+      
+      function loadTenants() {
+        console.log('👥 Loading tenants for campus:', campus);
+        fetch(`/api/admin/tenants/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => {
+          console.log('📥 Tenants response status:', response.status);
+          return response.json();
+        })
+        .then(tenants => {
+          console.log('📥 Tenants received:', tenants);
+          const tenantList = document.getElementById('tenant-list');
+          tenantList.innerHTML = '';
+          
+          tenants.forEach(tenant => {
+            const li = document.createElement('li');
+            li.style.cssText = 'padding:1rem;margin-bottom:0.5rem;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);cursor:pointer;';
+            li.innerHTML = `
+              <div style="font-weight:600;color:#30415d;">${tenant.fullName}</div>
+              <div style="font-size:0.9rem;color:#666;">${tenant.email}</div>
+              <div style="font-size:0.8rem;color:#999;">
+                ${tenant.hostel || 'N/A'} • Room ${tenant.roomNumber || 'N/A'} • ${tenant.roomType || 'N/A'}
+              </div>
+              ${tenant.assignedAt ? `<div style="font-size:0.7rem;color:#999;margin-top:0.3rem;">Assigned: ${new Date(tenant.assignedAt).toLocaleDateString()}</div>` : ''}
+            `;
+            li.addEventListener('click', () => showTenantModal(tenant));
+            tenantList.appendChild(li);
+          });
+        })
+        .catch(error => {
+          console.error('❌ Error loading tenants:', error);
+          showToast('Error loading tenants', 'error');
+        });
+      }
+      
+      let bookingsData = []; // Store bookings data
+      let profileRequestsData = []; // Store profile requests data
+      let tourRequestsData = []; // Store tour requests data
+
+      function loadBookings() {
+        console.log('📊 Loading bookings for campus:', campus);
+        fetch(`/api/admin/bookings/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => {
+          console.log('📥 Bookings response status:', response.status);
+          return response.json();
+        })
+        .then(bookings => {
+          console.log('📥 Bookings received:', bookings);
+          bookingsData = bookings;
+          window.bookingsData = bookings; // Make it globally accessible
+          window.renderBookingsTable(bookings);
+        })
+        .catch(error => {
+          console.error('❌ Error loading bookings:', error);
+          showToast('Error loading bookings', 'error');
+        });
+      }
+      
+      function loadProfileRequests() {
+        fetch(`/api/admin/profile-requests/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(requests => {
+          profileRequestsData = requests;
+          renderProfileRequestsTable();
+        })
+        .catch(error => {
+          console.error('Error loading profile requests:', error);
+          showToast('Error loading profile requests', 'error');
+        });
+      }
+      
+      function loadHostels() {
+        fetch(`/api/admin/hostels/${campus}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(hostels => {
+          const tbody = document.querySelector('#hostel-table tbody');
+          tbody.innerHTML = '';
+          
+          hostels.forEach(hostel => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${hostel.name}</td>
+              <td>${hostel.roomTypes.join(', ')}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-view" onclick="editHostel('${hostel._id}')">Edit</button>
+                  <button class="btn-reject" onclick="deleteHostel('${hostel._id}')">Delete</button>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading hostels:', error);
+          showToast('Error loading hostels', 'error');
+        });
+      }
+
+      function loadTourRequests() {
+        fetch(`/api/tours?campus=${campus}`)
+          .then(response => response.json())
+          .then(requests => {
+            tourRequestsData = requests;
+            renderTourRequestsTable();
+          })
+          .catch(error => {
+            console.error('Error loading tour requests:', error);
+          });
+      }
+      
+      function setupNavigation() {
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === '../login.html') {
+              localStorage.clear();
+              return;
+            }
+            
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+              section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav links
+            navLinks.forEach(l => l.classList.remove('active'));
+            
+            // Show target section and activate nav link
+            document.getElementById(targetId + '-section').classList.add('active');
+            this.classList.add('active');
+          });
+        });
+      }
+      
+      function setupMobileNavigation() {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+        const closeMobileMenu = document.getElementById('close-mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuBtn.classList.toggle('active');
+          mobileNavOverlay.classList.toggle('active');
+        });
+        
+        closeMobileMenu.addEventListener('click', () => {
+          mobileMenuBtn.classList.remove('active');
+          mobileNavOverlay.classList.remove('active');
+        });
+        
+        // Mobile nav links
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+          link.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === '../login.html') {
+              localStorage.clear();
+              return;
+            }
+            
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+              section.classList.remove('active');
+            });
+            
+            // Remove active class from all mobile nav links
+            document.querySelectorAll('.mobile-nav-link').forEach(l => l.classList.remove('active'));
+            
+            // Show target section and activate nav link
+            document.getElementById(targetId + '-section').classList.add('active');
+            this.classList.add('active');
+            
+            // Close mobile menu
+            mobileMenuBtn.classList.remove('active');
+            mobileNavOverlay.classList.remove('active');
+          });
+        });
+      }
+      
+      function setupEventListeners() {
+        // Quick action cards
+        document.getElementById('pending-profile-card').addEventListener('click', () => {
+          document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+          document.getElementById('profile-requests-section').classList.add('active');
+          document.querySelectorAll('.sidebar nav a').forEach(l => l.classList.remove('active'));
+          document.querySelector('[href="#profile-requests"]').classList.add('active');
+        });
+        
+        document.getElementById('pending-bookings-card').addEventListener('click', () => {
+          document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+          document.getElementById('bookings-section').classList.add('active');
+          document.querySelectorAll('.sidebar nav a').forEach(l => l.classList.remove('active'));
+          document.querySelector('[href="#bookings"]').classList.add('active');
+        });
+
+        document.getElementById('tour-requests-link').addEventListener('click', () => {
+          document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+          document.getElementById('tour-requests-section').classList.add('active');
+          document.querySelectorAll('.sidebar nav a').forEach(l => l.classList.remove('active'));
+          document.querySelector('[href="#tour-requests"]').classList.add('active');
+        });
+        
+        // Search functionality
+        document.getElementById('tenant-search').addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          const tenantItems = document.querySelectorAll('#tenant-list li');
+          
+          tenantItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+          });
+        });
+        
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          localStorage.clear();
+          window.location.href = '../login.html';
+        });
+      }
+      
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+          <span>${message}</span>
+          <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        
+        document.getElementById('toast-container').appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      }
+      
+      // Global functions for modals and actions
+      window.showTenantModal = function(tenant) {
+        document.getElementById('modal-tenant-name').textContent = tenant.fullName;
+        document.getElementById('modal-tenant-email').textContent = tenant.email;
+        document.getElementById('modal-tenant-hostel').textContent = tenant.hostel || 'N/A';
+        document.getElementById('modal-tenant-campus').textContent = tenant.campus;
+        document.getElementById('modal-tenant-role').textContent = tenant.role;
+        
+        // Add room information to the modal
+        const roomInfo = document.getElementById('modal-tenant-room');
+        if (roomInfo) {
+          roomInfo.textContent = `Room ${tenant.roomNumber || 'N/A'} (${tenant.roomType || 'N/A'})`;
+        }
+        
+        const assignedDate = document.getElementById('modal-tenant-assigned');
+        if (assignedDate && tenant.assignedAt) {
+          assignedDate.textContent = new Date(tenant.assignedAt).toLocaleDateString();
+        }
+        
+        document.getElementById('tenant-modal').style.display = 'block';
+      };
+      
+      window.showBookingModal = function(bookingId) {
+        console.log('🎯 Showing booking modal for ID:', bookingId);
+        
+        // Find the booking data from the stored bookings
+        const booking = allBookingsData.find(b => b._id === bookingId) || 
+                       filteredBookingsData.find(b => b._id === bookingId);
+        
+        if (!booking) {
+          console.error('❌ Booking not found:', bookingId);
+          showToast('Booking not found', 'error');
+          return;
+        }
+        
+        console.log('✅ Found booking data:', booking);
+        
+        // Populate the booking modal with data
+        document.getElementById('modal-booking-tenant').textContent = booking.user?.fullName || 'N/A';
+        document.getElementById('modal-booking-hostel').textContent = booking.hostel?.name || 'N/A';
+        document.getElementById('modal-booking-room').textContent = booking.roomType || 'N/A';
+        document.getElementById('modal-booking-room-number').textContent = booking.roomNumber || 'Not Assigned';
+        document.getElementById('modal-booking-amount').textContent = booking.amount ? `GHS ${booking.amount}` : 'N/A';
+        document.getElementById('modal-booking-status').textContent = booking.status || 'N/A';
+        document.getElementById('modal-booking-date').textContent = new Date(booking.createdAt).toLocaleDateString();
+        document.getElementById('modal-booking-id').textContent = booking._id || 'N/A';
+        
+        // Handle room notes
+        const notesContainer = document.getElementById('modal-booking-notes');
+        const notesText = document.getElementById('modal-booking-notes-text');
+        if (booking.roomNotes && booking.roomNotes.trim()) {
+          notesText.textContent = booking.roomNotes;
+          notesContainer.style.display = 'block';
+        } else {
+          notesContainer.style.display = 'none';
+        }
+        
+        // Show the modal
+        const modal = document.getElementById('booking-modal');
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        
+        console.log('✅ Booking modal displayed successfully');
+      };
+      
+      // Handle room assignment form submission
+      document.getElementById('room-assignment-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const bookingId = this.getAttribute('data-booking-id');
+        const roomNumber = document.getElementById('room-number').value.trim();
+        const roomNotes = document.getElementById('room-notes').value.trim();
+        
+        if (!roomNumber) {
+          showToast('Please enter a room number', 'error');
+          return;
+        }
+        
+        // Confirm booking with room assignment
+        fetch(`/api/admin/bookings/${bookingId}/confirm`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            roomNumber: roomNumber,
+            roomNotes: roomNotes
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Booking confirmed and room assigned successfully! Please inform the tenant to refresh their dashboard to see the updated payment information.');
+            showToast('Booking confirmed and room assigned successfully', 'success');
+            closeRoomAssignmentModal();
+            loadBookings();
+            loadDashboardStats(); // Refresh dashboard stats specifically
+            loadTenants(); // Refresh tenants list
+          } else {
+            showToast('Error confirming booking', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error confirming booking:', error);
+          showToast('Error confirming booking', 'error');
+        });
+      });
+      
+      // Close room assignment modal
+      window.closeRoomAssignmentModal = function() {
+        document.getElementById('room-assignment-modal').classList.remove('show');
+        document.getElementById('room-assignment-form').reset();
+        document.getElementById('room-assignment-form').removeAttribute('data-booking-id');
+      };
+      
+      // Close room assignment modal when clicking the close button
+      document.getElementById('close-room-assignment-modal').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        closeRoomAssignmentModal();
+      });
+      
+      window.cancelBooking = function(bookingId) {
+        if (confirm('Are you sure you want to cancel this booking? The user will be able to book another room after cancellation.')) {
+          fetch(`/api/admin/bookings/${bookingId}/cancel`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          .then(response => response.json())
+                  .then(data => {
+          if (data.success) {
+            showToast('Booking cancelled successfully. The user can now book another room if they don\'t have any pending bookings.', 'success');
+            loadBookings();
+            loadDashboardStats(); // Refresh dashboard stats specifically
+          } else {
+            showToast('Error cancelling booking', 'error');
+          }
+        })
+          .catch(error => {
+            console.error('Error cancelling booking:', error);
+            showToast('Error cancelling booking', 'error');
+          });
+        }
+      };
+      
+      // Close modal functions
+      document.getElementById('close-tenant-modal').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        document.getElementById('tenant-modal').style.display = 'none';
+      });
+      
+      document.getElementById('close-booking-modal').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        document.getElementById('booking-modal').style.display = 'none';
+      });
+      
+      document.getElementById('close-profile-request-modal').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        document.getElementById('profile-request-modal').style.display = 'none';
+      });
+      
+      document.getElementById('close-hostel-modal').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        document.getElementById('hostel-modal').style.display = 'none';
+      });
+      
+      // Close modals when clicking outside
+      window.addEventListener('click', (event) => {
+        const modals = ['tenant-modal', 'booking-modal', 'profile-request-modal', 'hostel-modal', 'room-assignment-modal'];
+        modals.forEach(modalId => {
+          const modal = document.getElementById(modalId);
+          if (modal && event.target === modal) {
+            // Only close if clicking directly on the modal backdrop, not on modal content
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+          }
+        });
+      });
+      
+      // Close modals with ESC key
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          const modals = ['tenant-modal', 'booking-modal', 'profile-request-modal', 'hostel-modal', 'room-assignment-modal'];
+          modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && (modal.style.display === 'block' || modal.classList.contains('show'))) {
+              modal.style.display = 'none';
+              modal.classList.remove('show');
+            }
+          });
+        }
+      });
+    });
+  </script>
+  <script src="admin-stu.js"></script>
+</body>
+</html> 

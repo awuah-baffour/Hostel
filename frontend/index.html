@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="JL Hostels">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>HOSTEL HUB</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
+</head>
+<body>
+    <!-- Top navigation bar -->
+    <nav class="navbar-top">
+        <span class="navbar-heading">JL HOSTELS</span>
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <h2>JL HOSTELS</h2>
+                <button id="close-mobile-menu" class="close-mobile-menu">&times;</button>
+            </div>
+            <nav class="mobile-nav">
+                <a href="login.html" class="mobile-nav-link">Login</a>
+                <a href="register.html" class="mobile-nav-link">Register</a>
+                <a href="book-tour.html" class="mobile-nav-link">Book a Tour</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Modern hero section -->
+    <header class="hero-header">
+        <div class="hero-bg"></div>
+        <div class="hero-content container">
+            <p class="hero-sub">Find, Book, and Enjoy the Best Hostels in Ghana</p>
+        </div>
+    </header>
+
+    <!-- Booking Steps Section -->
+    <section class="booking-steps container modern-card">
+        <h2 class="booking-title">Book a room with these simple steps</h2>
+        <div class="steps-flex">
+            <div class="step-card">
+                <img src="images/Copilot_20250712_111146.png" alt="Find available rooms" class="step-img">
+                <span class="step-label">Find available rooms</span>
+            </div>
+            <div class="step-card">
+                <img src="images/albert-vincent-wu-5LNoiVdL9SI-unsplash.jpg" alt="Book a bed" class="step-img">
+                <span class="step-label">Book a bed</span>
+            </div>
+            <div class="step-card">
+                <img src="images/Copilot_20250712_121555.png" alt="Pay instantly or later" class="step-img">
+                <span class="step-label">Pay instantly or later!</span>
+            </div>
+        </div>
+        <div class="booking-btn-wrap">
+            <a href="register.html" class="booking-btn">Book now!</a>
+            <a href="book-tour.html" class="booking-btn" style="margin-left:1rem;">Book a Tour</a>
+        </div>
+    </section>
+    <section class="about-us-section container modern-card">
+        <h2>About Us</h2>
+        <p>We are a co-working ecosystem. A community of entrepreneurs, leaders of industry and investors</p>
+        <div class="about-details">
+            <p><strong>Vision:</strong> To raise up inspirational captains of Industries</p>
+            <p><strong>Mission:</strong> To nurture and build a diversified portfolio of valuable business brands that improve the lives of people all around the world everyday</p>
+            <p><strong>Purpose:</strong> To glorify God by being an effective steward of resources spreading love and innovative goodness</p>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-copy">
+            &copy; 2025 JL HOSTELS. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Change "Register" to "Dashboard" if logged in
+                const registerLink = document.querySelector('.navbar-top a[href="register.html"]');
+                if (registerLink) {
+                    const role = localStorage.getItem('role');
+                    registerLink.textContent = role === 'admin' ? 'Admin Dashboard' : 'My Dashboard';
+                    registerLink.href = role === 'admin' ? 'dashboard/admin.html' : 'dashboard/tenant.html';
+                }
+            }
+
+            // Load featured hostels
+            try {
+                const response = await fetch('/api/hostels?limit=3');
+                const hostels = await response.json();
+                
+                const hostelGrid = document.getElementById('hostel-grid');
+                if (hostels.length > 0 && hostelGrid) {
+                    hostelGrid.innerHTML = hostels.map(hostel => `
+                        <div class="card" data-name="${hostel.name}" data-location="${hostel.campus}">
+                            <img src="images/${hostel.name.toLowerCase().replace(/\s+/g, '-')}.webp" alt="${hostel.name}">
+                            <h3>${hostel.name}</h3>
+                            <p>${hostel.campus} Campus</p>
+                            <p>Available Rooms: ${hostel.roomTypes.reduce((sum, room) => sum + room.available, 0)}</p>
+                            <a href="register.html?campus=${hostel.campus}" class="action-btn">Book Now</a>
+                        </div>
+                    `).join('');
+                } else if (hostelGrid) {
+                    hostelGrid.innerHTML = '<p>No hostels available at the moment. Please check back later.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading hostels:', error);
+                const hostelGrid = document.getElementById('hostel-grid');
+                if (hostelGrid) {
+                    hostelGrid.innerHTML = '<p>Unable to load hostels. Please try again later.</p>';
+                }
+            }
+
+            // Campus selection from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const campusParam = urlParams.get('campus');
+            if (campusParam && document.getElementById('campus-input')) {
+                document.getElementById('campus-input').value = campusParam;
+            }
+
+            // Mobile Navigation Functionality
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+            const closeMobileMenu = document.getElementById('close-mobile-menu');
+            // Toggle mobile menu
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileNavOverlay.classList.add('active');
+                mobileMenuBtn.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            // Close mobile menu
+            function closeMobileNav() {
+                mobileNavOverlay.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            closeMobileMenu.addEventListener('click', closeMobileNav);
+            mobileNavOverlay.addEventListener('click', function(e) {
+                if (e.target === mobileNavOverlay) {
+                    closeMobileNav();
+                }
+            });
+            // Mobile navigation links
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    closeMobileNav();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
